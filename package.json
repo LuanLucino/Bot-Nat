@@ -1,0 +1,14 @@
+{
+  "name": "bot-nat",
+  "version": "1.0.0",
+  "description": "Projeto inicial em Node.js",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^17.3.1"
+  }
+}
