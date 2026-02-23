@@ -70,20 +70,29 @@ module.exports = {
   },
 
   async autocomplete(interaction) {
-    const focusedValue = interaction.options.getFocused();
+  const focusedValue = interaction.options.getFocused();
 
-    // Se não houver nada digitado, já mostra todos os produtos
-    const choices = Object.entries(produtos).map(([id, produto]) => ({
-      name: `${id}. ${produto.nome} - R$${produto.preco.toFixed(2)}`,
-      value: id
-    }));
-
-    const filtered = focusedValue
-      ? choices.filter(choice =>
-          choice.name.toLowerCase().includes(focusedValue.toLowerCase())
-        )
-      : choices;
-
-    await interaction.respond(filtered.slice(0, 25));
+  // Garantir que temos produtos carregados
+  if (!produtos || Object.keys(produtos).length === 0) {
+    return interaction.respond([]);
   }
+
+  // Gerar lista de produtos a partir do JSON
+  const choices = Object.entries(produtos).map(([id, produto]) => ({
+    name: `${id}. ${produto.nome} - R$${produto.preco.toFixed(2)}`,
+    value: id
+  }));
+
+  // Se o usuário não digitou nada, mostra todos
+  let filtered = choices;
+  if (focusedValue) {
+    filtered = choices.filter(choice =>
+      choice.name.toLowerCase().includes(focusedValue.toLowerCase())
+    );
+  }
+
+  // Responder com até 25 opções
+  await interaction.respond(filtered.slice(0, 25));
+}
+
 };
