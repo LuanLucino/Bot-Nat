@@ -28,7 +28,6 @@ module.exports = {
     const produtosInput = interaction.options.getString('produtos');
     const modelo = interaction.options.getString('modelo');
 
-    // Permitir múltiplos IDs separados por vírgula
     const ids = produtosInput.split(',').map(id => id.trim());
 
     let itens = [];
@@ -52,13 +51,11 @@ module.exports = {
       });
     }
 
-    // Confirmação para o cliente
     await interaction.reply({
       content: `🛒 **Pedido Registrado!**\n\n${itens.join('\n')}\n\n👕 Modelo: ${modelo}\n💰 **Total: R$${total.toFixed(2)}**\n\nA Nat entrará em contato para confirmar o pedido.`,
       ephemeral: true
     });
 
-    // Enviar para canal privado de administração
     const adminChannelId = process.env.ADMIN_CHANNEL_ID;
     try {
       const adminChannel = await interaction.client.channels.fetch(adminChannelId);
@@ -72,22 +69,21 @@ module.exports = {
     }
   },
 
-  // Handler do autocomplete
   async autocomplete(interaction) {
     const focusedValue = interaction.options.getFocused();
 
-    // Gerar lista de produtos a partir do JSON
+    // Se não houver nada digitado, já mostra todos os produtos
     const choices = Object.entries(produtos).map(([id, produto]) => ({
       name: `${id}. ${produto.nome} - R$${produto.preco.toFixed(2)}`,
       value: id
     }));
 
-    // Filtrar conforme o que o usuário digitou
-    const filtered = choices.filter(choice =>
-      choice.name.toLowerCase().includes(focusedValue.toLowerCase())
-    );
+    const filtered = focusedValue
+      ? choices.filter(choice =>
+          choice.name.toLowerCase().includes(focusedValue.toLowerCase())
+        )
+      : choices;
 
-    // Responder com até 25 opções
     await interaction.respond(filtered.slice(0, 25));
   }
 };
