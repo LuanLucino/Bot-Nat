@@ -2,23 +2,23 @@ const { SlashCommandBuilder } = require('discord.js');
 const fs = require('fs');
 
 // Carregar produtos e promoções
-const produtos = JSON.parse(fs.readFileSync('./inventory/products.json', 'utf8'));
-const promocoes = JSON.parse(fs.readFileSync('./inventory/promotions.json', 'utf8'));
+const produtos = JSON.parse(fs.readFileSync('./resources/products.json', 'utf8'));
+const promocoes = JSON.parse(fs.readFileSync('./resources/promotions.json', 'utf8'));
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('pedido')
     .setDescription('Registrar um novo pedido de roupas ou acessórios')
     .addStringOption(option =>
-      option.setName('produtos')
-        .setDescription('Escolha os produtos pelo número ou nome')
-        .setRequired(true)
-        .setAutocomplete(true)) // habilita autocomplete
-    .addStringOption(option =>
       option.setName('modelo')
         .setDescription('Escolha o modelo: masculino ou feminino')
-        .setRequired(true)),
-  
+        .setRequired(true))
+    .addStringOption(option =>
+      option.setName('produtos')
+        .setDescription('Selecione os produtos desejados')
+        .setRequired(true)
+        .setAutocomplete(true)), // habilita autocomplete multi-select
+
   async execute(interaction) {
     const produtosInput = interaction.options.getString('produtos');
     const modelo = interaction.options.getString('modelo');

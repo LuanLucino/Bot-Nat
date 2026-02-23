@@ -2,7 +2,7 @@ const { SlashCommandBuilder } = require('discord.js');
 const fs = require('fs');
 
 // Carregar produtos do arquivo JSON
-const produtos = JSON.parse(fs.readFileSync('./inventory/products.json', 'utf8'));
+const produtos = JSON.parse(fs.readFileSync('./resources/products.json', 'utf8'));
 
 module.exports = {
   data: new SlashCommandBuilder()

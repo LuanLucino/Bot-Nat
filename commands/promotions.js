@@ -2,7 +2,7 @@ const { SlashCommandBuilder } = require('discord.js');
 const fs = require('fs');
 
 // Carregar promoções do arquivo JSON
-const promocoes = JSON.parse(fs.readFileSync('./inventory/promotions.json', 'utf8'));
+const promocoes = JSON.parse(fs.readFileSync('./resources/promotions.json', 'utf8'));
 
 module.exports = {
   data: new SlashCommandBuilder()
