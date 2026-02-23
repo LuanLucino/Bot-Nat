@@ -24,7 +24,7 @@ module.exports = {
 
     // Enviar para canal privado de administração
     const adminChannelId = process.env.ADMIN_CHANNEL_ID;
-    const adminChannel = interaction.client.channels.cache.get(adminChannelId);
+    const adminChannel = await interaction.client.channels.fetch(adminChannelId);
 
     if (adminChannel) {
       adminChannel.send(
