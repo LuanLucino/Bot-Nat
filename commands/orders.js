@@ -2,33 +2,33 @@ const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('orders')
-    .setDescription('Register a new clothing or accessory order')
+    .setName('pedido') // comando em português
+    .setDescription('Registrar um novo pedido de roupa ou acessório')
     .addStringOption(option =>
-      option.setName('product')
-        .setDescription('Product name')
+      option.setName('produto')
+        .setDescription('Nome do produto')
         .setRequired(true))
     .addStringOption(option =>
-      option.setName('size')
-        .setDescription('Size (if applicable)')
+      option.setName('tamanho')
+        .setDescription('Tamanho (se aplicável)')
         .setRequired(false)),
   async execute(interaction) {
-    const product = interaction.options.getString('product');
-    const size = interaction.options.getString('size') || 'N/A';
+    const produto = interaction.options.getString('produto');
+    const tamanho = interaction.options.getString('tamanho') || 'N/A';
 
     // Confirmação para o cliente
     await interaction.reply({
-      content: `🛒 **Order Registered!**\n\nProduct: ${product}\nSize: ${size}\n\nA Nat entrará em contato para confirmar o pedido.`,
+      content: `🛒 **Pedido Registrado!**\n\nProduto: ${produto}\nTamanho: ${tamanho}\n\nA Nat entrará em contato para confirmar o pedido.`,
       ephemeral: true
     });
 
     // Enviar para canal privado de administração
-    const adminChannelId = process.env.ADMIN_CHANNEL_ID; // Defina no .env
+    const adminChannelId = process.env.ADMIN_CHANNEL_ID;
     const adminChannel = interaction.client.channels.cache.get(adminChannelId);
 
     if (adminChannel) {
       adminChannel.send(
-        `📦 **Novo Pedido**\nCliente: ${interaction.user.tag}\nProduto: ${product}\nTamanho: ${size}`
+        `📦 **Novo Pedido**\nCliente: ${interaction.user.tag}\nProduto: ${produto}\nTamanho: ${tamanho}`
       );
     } else {
       console.error("Canal de administração não encontrado!");
