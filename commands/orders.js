@@ -1,45 +1,49 @@
 const { SlashCommandBuilder } = require('discord.js');
+const fs = require('fs');
 
-const produtos = {
-  1: { nome: "Camiseta básica", preco: 49.90 },
-  2: { nome: "Jaqueta jeans", preco: 159.90 },
-  3: { nome: "Bolsa de couro", preco: 199.90 },
-  4: { nome: "Boné estilizado", preco: 79.90 }
-};
+// Carregar produtos do arquivo JSON
+const produtos = JSON.parse(fs.readFileSync('./resources/products.json', 'utf8'));
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('pedido')
     .setDescription('Registrar um novo pedido de roupa ou acessório')
     .addStringOption(option =>
-      option.setName('produto')
-        .setDescription('Digite o número do produto (ex: 1 para Camiseta)')
+      option.setName('produtos')
+        .setDescription('Digite os números dos produtos separados por vírgula (ex: 1,2)')
         .setRequired(true))
     .addStringOption(option =>
       option.setName('genero')
         .setDescription('Escolha o gênero: masculino ou feminino')
         .setRequired(true)),
   async execute(interaction) {
-    const produtoInput = interaction.options.getString('produto');
+    const produtosInput = interaction.options.getString('produtos');
     const genero = interaction.options.getString('genero');
 
-    // Converter entrada em número
-    const produtoId = parseInt(produtoInput, 10);
-    const produto = produtos[produtoId];
+    // Transformar entrada em array de IDs
+    const ids = produtosInput.split(',').map(id => id.trim());
 
-    if (!produto) {
+    let itens = [];
+    let total = 0;
+
+    for (const id of ids) {
+      const produto = produtos[id];
+      if (produto) {
+        itens.push(`${id}. ${produto.nome} - R$${produto.preco.toFixed(2)}`);
+        total += produto.preco;
+      }
+    }
+
+    if (itens.length === 0) {
       return interaction.reply({
-        content: "❌ Produto inválido! Digite um número válido (1 a 4).",
+        content: "❌ Nenhum produto válido encontrado! Verifique os números disponíveis no catálogo.",
         ephemeral: true
       });
     }
 
-    // Calcular total (nesse caso só 1 item, mas pode evoluir para lista)
-    const total = produto.preco;
-
     // Confirmação para o cliente
     await interaction.reply({
-      content: `🛒 **Pedido Registrado!**\n\nProduto: ${produto.nome}\nPreço: R$${produto.preco.toFixed(2)}\nGênero: ${genero}\n\n💰 **Total: R$${total.toFixed(2)}**\n\nA Nat entrará em contato para confirmar o pedido.`,
+      content: `🛒 **Pedido Registrado!**\n\n${itens.join('\n')}\n\n⚧ Gênero: ${genero}\n💰 **Total: R$${total.toFixed(2)}**\n\nA Nat entrará em contato para confirmar o pedido.`,
       ephemeral: true
     });
 
@@ -49,7 +53,7 @@ module.exports = {
       const adminChannel = await interaction.client.channels.fetch(adminChannelId);
       if (adminChannel) {
         await adminChannel.send(
-          `📦 **Novo Pedido**\n👤 Cliente: ${interaction.user.tag}\n👕 Produto: ${produto.nome}\n💰 Preço: R$${produto.preco.toFixed(2)}\n⚧ Gênero: ${genero}\n💵 Total: R$${total.toFixed(2)}`
+          `📦 **Novo Pedido**\n👤 Cliente: ${interaction.user.tag}\n${itens.join('\n')}\n⚧ Gênero: ${genero}\n💵 Total: R$${total.toFixed(2)}`
         );
       }
     } catch (error) {
