@@ -15,21 +15,36 @@ for (const file of commandFiles) {
   client.commands.set(command.data.name, command);
 }
 
-client.once('ready', () => {
+// Evento correto para quando o bot fica online
+client.once('clientReady', () => {
   console.log(`Bot online como ${client.user.tag}`);
 });
 
 client.on('interactionCreate', async interaction => {
-  if (!interaction.isChatInputCommand()) return;
+  // Handler para autocomplete
+  if (interaction.isAutocomplete()) {
+    const command = client.commands.get(interaction.commandName);
+    if (!command || !command.autocomplete) return;
 
-  const command = client.commands.get(interaction.commandName);
-  if (!command) return;
+    try {
+      await command.autocomplete(interaction);
+    } catch (error) {
+      console.error("Erro no autocomplete:", error);
+    }
+    return;
+  }
 
-  try {
-    await command.execute(interaction);
-  } catch (error) {
-    console.error(error);
-    await interaction.reply({ content: 'Houve um erro ao executar este comando!', ephemeral: true });
+  // Handler para comandos normais
+  if (interaction.isChatInputCommand()) {
+    const command = client.commands.get(interaction.commandName);
+    if (!command) return;
+
+    try {
+      await command.execute(interaction);
+    } catch (error) {
+      console.error(error);
+      await interaction.reply({ content: 'Houve um erro ao executar este comando!', ephemeral: true });
+    }
   }
 });
 
