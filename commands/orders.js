@@ -16,7 +16,7 @@ module.exports = {
     const produto = interaction.options.getString('produto');
     const tamanho = interaction.options.getString('tamanho') || 'N/A';
 
-    // Confirmação para o cliente
+    // Confirmação para o cliente (apenas visível para quem fez o pedido)
     await interaction.reply({
       content: `🛒 **Pedido Registrado!**\n\nProduto: ${produto}\nTamanho: ${tamanho}\n\nA Nat entrará em contato para confirmar o pedido.`,
       ephemeral: true
@@ -24,14 +24,19 @@ module.exports = {
 
     // Enviar para canal privado de administração
     const adminChannelId = process.env.ADMIN_CHANNEL_ID;
-    const adminChannel = await interaction.client.channels.fetch(adminChannelId);
 
-    if (adminChannel) {
-      adminChannel.send(
-        `📦 **Novo Pedido**\nCliente: ${interaction.user.tag}\nProduto: ${produto}\nTamanho: ${tamanho}`
-      );
-    } else {
-      console.error("Canal de administração não encontrado!");
+    try {
+      const adminChannel = await interaction.client.channels.fetch(adminChannelId);
+
+      if (adminChannel) {
+        await adminChannel.send(
+          `📦 **Novo Pedido Recebido**\n👤 Cliente: ${interaction.user.tag}\n👕 Produto: ${produto}\n📏 Tamanho: ${tamanho}`
+        );
+      } else {
+        console.error("❌ Canal de administração não encontrado. Verifique o ADMIN_CHANNEL_ID no .env");
+      }
+    } catch (error) {
+      console.error("❌ Erro ao enviar pedido para o canal de administração:", error);
     }
   },
 };
