@@ -72,27 +72,30 @@ module.exports = {
   async autocomplete(interaction) {
   const focusedValue = interaction.options.getFocused();
 
-  // Garantir que temos produtos carregados
+  // Debug: logar no console do Railway
+  console.log("Autocomplete chamado. Valor digitado:", focusedValue);
+  console.log("Produtos carregados:", produtos);
+
   if (!produtos || Object.keys(produtos).length === 0) {
+    console.log("Nenhum produto encontrado no JSON!");
     return interaction.respond([]);
   }
 
-  // Gerar lista de produtos a partir do JSON
   const choices = Object.entries(produtos).map(([id, produto]) => ({
     name: `${id}. ${produto.nome} - R$${produto.preco.toFixed(2)}`,
     value: id
   }));
 
-  // Se o usuário não digitou nada, mostra todos
-  let filtered = choices;
-  if (focusedValue) {
-    filtered = choices.filter(choice =>
-      choice.name.toLowerCase().includes(focusedValue.toLowerCase())
-    );
-  }
+  const filtered = focusedValue
+    ? choices.filter(choice =>
+        choice.name.toLowerCase().includes(focusedValue.toLowerCase())
+      )
+    : choices;
 
-  // Responder com até 25 opções
+  console.log("Opções filtradas:", filtered);
+
   await interaction.respond(filtered.slice(0, 25));
 }
+
 
 };
