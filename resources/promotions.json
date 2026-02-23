@@ -1,0 +1,5 @@
+{
+  "1": { "nome": "Camiseta básica", "preco_original": 49.90, "preco_promocional": 39.90 },
+  "2": { "nome": "Jaqueta jeans", "preco_original": 159.90, "preco_promocional": 129.90 },
+  "3": { "nome": "Bolsa de couro", "preco_original": 199.90, "preco_promocional": 169.90 }
+}

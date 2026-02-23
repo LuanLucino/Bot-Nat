@@ -1,26 +1,29 @@
 const { SlashCommandBuilder } = require('discord.js');
 const fs = require('fs');
 
-// Carregar produtos do arquivo JSON
-const produtos = JSON.parse(fs.readFileSync('./resources/products.json', 'utf8'));
+// Carregar produtos e promoções
+const produtos = JSON.parse(fs.readFileSync('./inventory/products.json', 'utf8'));
+const promocoes = JSON.parse(fs.readFileSync('./inventory/promotions.json', 'utf8'));
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('pedido')
-    .setDescription('Registrar um novo pedido de roupa ou acessório')
+    .setDescription('Registrar um novo pedido de roupas ou acessórios')
     .addStringOption(option =>
       option.setName('produtos')
-        .setDescription('Digite os números dos produtos separados por vírgula (ex: 1,2)')
-        .setRequired(true))
+        .setDescription('Escolha os produtos pelo número ou nome')
+        .setRequired(true)
+        .setAutocomplete(true)) // habilita autocomplete
     .addStringOption(option =>
-      option.setName('genero')
-        .setDescription('Escolha o gênero: masculino ou feminino')
+      option.setName('modelo')
+        .setDescription('Escolha o modelo: masculino ou feminino')
         .setRequired(true)),
+  
   async execute(interaction) {
     const produtosInput = interaction.options.getString('produtos');
-    const genero = interaction.options.getString('genero');
+    const modelo = interaction.options.getString('modelo');
 
-    // Transformar entrada em array de IDs
+    // Permitir múltiplos IDs separados por vírgula
     const ids = produtosInput.split(',').map(id => id.trim());
 
     let itens = [];
@@ -29,8 +32,11 @@ module.exports = {
     for (const id of ids) {
       const produto = produtos[id];
       if (produto) {
-        itens.push(`${id}. ${produto.nome} - R$${produto.preco.toFixed(2)}`);
-        total += produto.preco;
+        const promocao = promocoes[id];
+        const preco = promocao ? promocao.preco_promocional : produto.preco;
+
+        itens.push(`${id}. ${produto.nome} - R$${preco.toFixed(2)}${promocao ? " (em promoção)" : ""}`);
+        total += preco;
       }
     }
 
@@ -43,7 +49,7 @@ module.exports = {
 
     // Confirmação para o cliente
     await interaction.reply({
-      content: `🛒 **Pedido Registrado!**\n\n${itens.join('\n')}\n\n⚧ Gênero: ${genero}\n💰 **Total: R$${total.toFixed(2)}**\n\nA Nat entrará em contato para confirmar o pedido.`,
+      content: `🛒 **Pedido Registrado!**\n\n${itens.join('\n')}\n\n👕 Modelo: ${modelo}\n💰 **Total: R$${total.toFixed(2)}**\n\nA Nat entrará em contato para confirmar o pedido.`,
       ephemeral: true
     });
 
@@ -53,11 +59,26 @@ module.exports = {
       const adminChannel = await interaction.client.channels.fetch(adminChannelId);
       if (adminChannel) {
         await adminChannel.send(
-          `📦 **Novo Pedido**\n👤 Cliente: ${interaction.user.tag}\n${itens.join('\n')}\n⚧ Gênero: ${genero}\n💵 Total: R$${total.toFixed(2)}`
+          `📦 **Novo Pedido**\n👤 Cliente: ${interaction.user.tag}\n${itens.join('\n')}\n👕 Modelo: ${modelo}\n💵 Total: R$${total.toFixed(2)}`
         );
       }
     } catch (error) {
       console.error("Erro ao enviar para canal de administração:", error);
     }
   },
+
+  // Handler do autocomplete
+  async autocomplete(interaction) {
+    const focusedValue = interaction.options.getFocused();
+    const choices = Object.entries(produtos).map(([id, produto]) => ({
+      name: `${id}. ${produto.nome} - R$${produto.preco.toFixed(2)}`,
+      value: id
+    }));
+
+    const filtered = choices.filter(choice =>
+      choice.name.toLowerCase().includes(focusedValue.toLowerCase())
+    );
+
+    await interaction.respond(filtered.slice(0, 25)); // máximo de 25 opções
+  }
 };
