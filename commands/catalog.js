@@ -1,24 +1,25 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const fs = require('fs');
 
-// Carregar produtos do arquivo JSON
 const produtos = JSON.parse(fs.readFileSync('./resources/products.json', 'utf8'));
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('catalogo')
-    .setDescription('Mostra o catálogo de roupas e acessórios disponíveis'),
+    .setDescription('Exibe o catálogo de produtos disponíveis'),
+
   async execute(interaction) {
-    let lista = [];
+    const itens = Object.entries(produtos).map(
+      ([id, produto]) => `${id}. ${produto.nome} - R$${produto.preco.toFixed(2)}`
+    );
 
-    for (const id in produtos) {
-      const produto = produtos[id];
-      lista.push(`${id}. ${produto.nome} - R$${produto.preco.toFixed(2)}`);
-    }
+    const catalogoEmbed = new EmbedBuilder()
+      .setColor(0x3498db)
+      .setTitle("📖 Catálogo de Produtos")
+      .setDescription("Confira os itens disponíveis para pedido:")
+      .addFields({ name: "Produtos", value: itens.join('\n') })
+      .setFooter({ text: "Use /pedido para registrar seu pedido." });
 
-    await interaction.reply({
-      content: `👕 **Catálogo Nat**\n\n${lista.join('\n')}`,
-      ephemeral: false
-    });
-  },
+    await interaction.reply({ embeds: [catalogoEmbed], ephemeral: true });
+  }
 };

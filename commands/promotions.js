@@ -1,24 +1,37 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const fs = require('fs');
 
-// Carregar promoções do arquivo JSON
+const produtos = JSON.parse(fs.readFileSync('./resources/products.json', 'utf8'));
 const promocoes = JSON.parse(fs.readFileSync('./resources/promotions.json', 'utf8'));
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('promocoes')
-    .setDescription('Mostra as promoções e descontos atuais'),
-  async execute(interaction) {
-    let lista = [];
+    .setDescription('Exibe as promoções atuais'),
 
-    for (const id in promocoes) {
-      const item = promocoes[id];
-      lista.push(`${id}. ${item.nome} — de R$${item.preco_original.toFixed(2)} por **R$${item.preco_promocional.toFixed(2)}**`);
+  async execute(interaction) {
+    const itensPromocao = Object.entries(promocoes).map(([id, promo]) => {
+      const produto = produtos[id];
+      if (!produto) return null;
+      return `${id}. ${produto.nome} ~~R$${produto.preco.toFixed(2)}~~ ➝ **R$${promo.preco_promocional.toFixed(2)}**`;
+    }).filter(Boolean);
+
+    if (itensPromocao.length === 0) {
+      const semPromoEmbed = new EmbedBuilder()
+        .setColor(0xe74c3c)
+        .setTitle("❌ Nenhuma promoção ativa")
+        .setDescription("No momento não há promoções disponíveis.");
+
+      return interaction.reply({ embeds: [semPromoEmbed], ephemeral: true });
     }
 
-    await interaction.reply({
-      content: `💸 **Promoções Atuais**\n\n${lista.join('\n')}\n\nAproveite enquanto durar o estoque!`,
-      ephemeral: false
-    });
-  },
+    const promoEmbed = new EmbedBuilder()
+      .setColor(0x2ecc71)
+      .setTitle("🔥 Promoções Ativas")
+      .setDescription("Aproveite os descontos especiais!")
+      .addFields({ name: "Itens em promoção", value: itensPromocao.join('\n') })
+      .setFooter({ text: "Use /pedido para aproveitar as promoções." });
+
+    await interaction.reply({ embeds: [promoEmbed], ephemeral: true });
+  }
 };
