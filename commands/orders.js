@@ -20,7 +20,7 @@ module.exports = {
     )
     .addStringOption(option =>
       option.setName('produtos')
-        .setDescription('Digite os números dos produtos separados por vírgula')
+        .setDescription('Selecione os produtos desejados (digite o número ou nome)')
         .setRequired(true)
         .setAutocomplete(true)),
 
@@ -76,7 +76,7 @@ module.exports = {
   async autocomplete(interaction) {
     const focusedValue = interaction.options.getFocused();
 
-    // Gerar lista de produtos
+    // Gerar lista de produtos a partir do JSON
     const choices = Object.entries(produtos).map(([id, produto]) => ({
       name: `${id}. ${produto.nome} - R$${produto.preco.toFixed(2)}`,
       value: id
