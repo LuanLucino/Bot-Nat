@@ -20,9 +20,9 @@ module.exports = {
     )
     .addStringOption(option =>
       option.setName('produtos')
-        .setDescription('Selecione os produtos desejados')
+        .setDescription('Digite os números dos produtos separados por vírgula')
         .setRequired(true)
-        .setAutocomplete(true)), // habilita autocomplete
+        .setAutocomplete(true)),
 
   async execute(interaction) {
     const produtosInput = interaction.options.getString('produtos');
