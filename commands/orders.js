@@ -11,13 +11,18 @@ module.exports = {
     .setDescription('Registrar um novo pedido de roupas ou acessórios')
     .addStringOption(option =>
       option.setName('modelo')
-        .setDescription('Escolha o modelo: masculino ou feminino')
-        .setRequired(true))
+        .setDescription('Escolha o modelo')
+        .setRequired(true)
+        .addChoices(
+          { name: 'Masculino', value: 'masculino' },
+          { name: 'Feminino', value: 'feminino' }
+        )
+    )
     .addStringOption(option =>
       option.setName('produtos')
         .setDescription('Selecione os produtos desejados')
         .setRequired(true)
-        .setAutocomplete(true)), // habilita autocomplete multi-select
+        .setAutocomplete(true)), // habilita autocomplete
 
   async execute(interaction) {
     const produtosInput = interaction.options.getString('produtos');
@@ -70,15 +75,19 @@ module.exports = {
   // Handler do autocomplete
   async autocomplete(interaction) {
     const focusedValue = interaction.options.getFocused();
+
+    // Gerar lista de produtos
     const choices = Object.entries(produtos).map(([id, produto]) => ({
       name: `${id}. ${produto.nome} - R$${produto.preco.toFixed(2)}`,
       value: id
     }));
 
+    // Filtrar conforme o que o usuário digitou
     const filtered = choices.filter(choice =>
       choice.name.toLowerCase().includes(focusedValue.toLowerCase())
     );
 
-    await interaction.respond(filtered.slice(0, 25)); // máximo de 25 opções
+    // Responder com até 25 opções
+    await interaction.respond(filtered.slice(0, 25));
   }
 };
