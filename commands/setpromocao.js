@@ -32,6 +32,20 @@ module.exports = {
     ),
 
   async execute(interaction) {
+    // Canal permitido para executar o comando
+    const canalPermitido = "1475643173005955235";
+    if (interaction.channelId !== canalPermitido) {
+      return interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setColor(0xFF0000)
+            .setTitle("❌ Canal inválido")
+            .setDescription("Este comando só pode ser usado no canal de administração de promoções.")
+        ],
+        ephemeral: true
+      });
+    }
+
     const acao = interaction.options.getString('acao');
     const produtoId = interaction.options.getString('produto');
     const precoPromo = interaction.options.getNumber('preco');
@@ -48,7 +62,7 @@ module.exports = {
       });
     }
 
-    // Canal fixo de promoções
+    // Canal fixo de promoções para anunciar
     const promoChannelId = "1475641664914591946";
 
     if (acao === 'adicionar') {
