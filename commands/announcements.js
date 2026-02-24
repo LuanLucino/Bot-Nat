@@ -15,23 +15,23 @@ module.exports = {
         .setDescription('Preço do produto')
         .setRequired(true)
     )
-    .addStringOption(option =>
+    .addAttachmentOption(option =>
       option.setName('imagem')
-        .setDescription('URL da imagem do produto')
+        .setDescription('Imagem do produto')
         .setRequired(true)
     ),
 
   async execute(interaction) {
     const nome = interaction.options.getString('nome');
     const preco = interaction.options.getNumber('preco');
-    const imagem = interaction.options.getString('imagem');
+    const imagem = interaction.options.getAttachment('imagem');
 
     // Embed do produto
     const embed = new EmbedBuilder()
       .setColor(0x2ecc71)
       .setTitle(nome)
       .setDescription(`Preço: R$${preco.toFixed(2)}`)
-      .setImage(imagem)
+      .setImage(imagem.url)
       .setFooter({ text: "Clique em comprar para registrar seu interesse." });
 
     // Botão de compra
