@@ -1,30 +1,54 @@
-const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
 
 module.exports = {
   name: 'interactionCreate',
-  once: false, // esse evento acontece várias vezes, não apenas uma
+  once: false,
   async execute(interaction, client) {
+    // Handler para autocomplete
+    if (interaction.isAutocomplete()) {
+      const command = client.commands.get(interaction.commandName);
+      if (!command || !command.autocomplete) return;
+
+      try {
+        await command.autocomplete(interaction);
+      } catch (error) {
+        console.error("Erro no autocomplete:", error);
+      }
+      return;
+    }
+
+    // Handler para comandos normais
+    if (interaction.isChatInputCommand()) {
+      const command = client.commands.get(interaction.commandName);
+      if (!command) return;
+
+      try {
+        await command.execute(interaction);
+      } catch (error) {
+        console.error(error);
+        await interaction.reply({ content: 'Houve um erro ao executar este comando!', ephemeral: true });
+      }
+      return;
+    }
+
     // Handler do botão "Comprar"
     if (interaction.isButton() && interaction.customId === 'comprar_produto') {
       const modal = new ModalBuilder()
         .setCustomId('modal_comprar_produto')
         .setTitle('🛒 Finalizar Compra');
 
-      // Campo Nome
       const nomeInput = new TextInputBuilder()
         .setCustomId('nome_cliente')
         .setLabel('Seu nome completo')
         .setStyle(TextInputStyle.Short)
         .setRequired(true);
 
-      // Campo Quantidade
       const qtdInput = new TextInputBuilder()
         .setCustomId('quantidade')
         .setLabel('Quantidade desejada')
         .setStyle(TextInputStyle.Short)
         .setRequired(true);
 
-      // Campo Observações
       const obsInput = new TextInputBuilder()
         .setCustomId('observacoes')
         .setLabel('Observações (ex: tamanho, cor)')
@@ -38,6 +62,7 @@ module.exports = {
       );
 
       await interaction.showModal(modal);
+      return;
     }
 
     // Handler do modal enviado
@@ -59,7 +84,6 @@ module.exports = {
 
       await interaction.reply({ embeds: [confirmEmbed], ephemeral: true });
 
-      // Opcional: enviar para canal de administração
       const adminChannelId = "1475643173005955235";
       try {
         const adminChannel = await client.channels.fetch(adminChannelId);
