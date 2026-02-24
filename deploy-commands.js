@@ -6,6 +6,12 @@ const commands = [];
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 
 for (const file of commandFiles) {
+  // Ignorar o comando /pedido
+  if (file === 'orders.js') {
+    console.log(`⏩ Ignorando ${file} (comando /pedido removido)`);
+    continue;
+  }
+
   const command = require(`./commands/${file}`);
   if (!command.data) {
     console.error(`⚠️ O arquivo ${file} não exporta 'data'. Verifique se está no formato correto.`);
