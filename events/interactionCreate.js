@@ -43,9 +43,10 @@ module.exports = {
         .setStyle(TextInputStyle.Short)
         .setRequired(true);
 
-      const qtdInput = new TextInputBuilder()
-        .setCustomId('quantidade')
-        .setLabel('Quantidade desejada')
+      // Campo Modelo (substitui Quantidade)
+      const modeloInput = new TextInputBuilder()
+        .setCustomId('modelo')
+        .setLabel('Modelo (Masculino, Feminino ou Ambos)')
         .setStyle(TextInputStyle.Short)
         .setRequired(true);
 
@@ -57,7 +58,7 @@ module.exports = {
 
       modal.addComponents(
         new ActionRowBuilder().addComponents(nomeInput),
-        new ActionRowBuilder().addComponents(qtdInput),
+        new ActionRowBuilder().addComponents(modeloInput),
         new ActionRowBuilder().addComponents(obsInput)
       );
 
@@ -68,7 +69,7 @@ module.exports = {
     // Handler do modal enviado
     if (interaction.isModalSubmit() && interaction.customId === 'modal_comprar_produto') {
       const nomeCliente = interaction.fields.getTextInputValue('nome_cliente');
-      const quantidade = interaction.fields.getTextInputValue('quantidade');
+      const modelo = interaction.fields.getTextInputValue('modelo');
       const observacoes = interaction.fields.getTextInputValue('observacoes');
 
       const confirmEmbed = new EmbedBuilder()
@@ -77,7 +78,7 @@ module.exports = {
         .setDescription("Seu pedido foi enviado com sucesso!")
         .addFields(
           { name: "Nome", value: nomeCliente, inline: true },
-          { name: "Quantidade", value: quantidade, inline: true },
+          { name: "Modelo", value: modelo, inline: true },
           { name: "Observações", value: observacoes || "Nenhuma", inline: false }
         )
         .setFooter({ text: "Um administrador entrará em contato para confirmar." });
@@ -94,7 +95,7 @@ module.exports = {
             .addFields(
               { name: "Cliente", value: interaction.user.tag, inline: false },
               { name: "Nome", value: nomeCliente, inline: true },
-              { name: "Quantidade", value: quantidade, inline: true },
+              { name: "Modelo", value: modelo, inline: true },
               { name: "Observações", value: observacoes || "Nenhuma", inline: false }
             )
             .setTimestamp();
