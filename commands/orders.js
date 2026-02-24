@@ -1,8 +1,13 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const fs = require('fs');
 
-const produtos = JSON.parse(fs.readFileSync('./resources/products.json', 'utf8'));
-const promocoes = JSON.parse(fs.readFileSync('./resources/promotions.json', 'utf8'));
+function carregarProdutos() {
+  return JSON.parse(fs.readFileSync('./resources/products.json', 'utf8'));
+}
+
+function carregarPromocoes() {
+  return JSON.parse(fs.readFileSync('./resources/promotions.json', 'utf8'));
+}
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -24,6 +29,9 @@ module.exports = {
         .setAutocomplete(true)),
 
   async execute(interaction) {
+    const produtos = carregarProdutos();
+    const promocoes = carregarPromocoes();
+
     const produtosInput = interaction.options.getString('produtos');
     const modelo = interaction.options.getString('modelo');
     const ids = produtosInput.split(',').map(id => id.trim());
@@ -34,9 +42,15 @@ module.exports = {
     for (const id of ids) {
       const produto = produtos[id];
       if (produto) {
-        const promocao = promocoes[id];
-        const preco = promocao ? promocao.preco_promocional : produto.preco;
-        itens.push(`${id}. ${produto.nome} - R$${preco.toFixed(2)}${promocao ? " 🔖 Promoção" : ""}`);
+        let preco = produto.preco;
+        let textoExtra = "";
+
+        if (promocoes[id]) {
+          preco = promocoes[id].preco_promocional;
+          textoExtra = " 🔖 Promoção";
+        }
+
+        itens.push(`${id}. ${produto.nome} - R$${preco.toFixed(2)}${textoExtra}`);
         total += preco;
       }
     }
@@ -90,11 +104,23 @@ module.exports = {
   },
 
   async autocomplete(interaction) {
+    const produtos = carregarProdutos();
+    const promocoes = carregarPromocoes();
+
     const focusedValue = interaction.options.getFocused();
-    const choices = Object.entries(produtos).map(([id, produto]) => ({
-      name: `${id}. ${produto.nome} - R$${produto.preco.toFixed(2)}`,
-      value: id
-    }));
+    const choices = Object.entries(produtos).map(([id, produto]) => {
+      const promo = promocoes[id];
+      if (promo) {
+        return {
+          name: `${id}. ${produto.nome} ~~R$${produto.preco.toFixed(2)}~~ ➝ R$${promo.preco_promocional.toFixed(2)}`,
+          value: id
+        };
+      }
+      return {
+        name: `${id}. ${produto.nome} - R$${produto.preco.toFixed(2)}`,
+        value: id
+      };
+    });
 
     const filtered = focusedValue
       ? choices.filter(choice =>

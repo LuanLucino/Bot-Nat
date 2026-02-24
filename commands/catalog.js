@@ -1,7 +1,13 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const fs = require('fs');
 
-const produtos = JSON.parse(fs.readFileSync('./resources/products.json', 'utf8'));
+function carregarProdutos() {
+  return JSON.parse(fs.readFileSync('./resources/products.json', 'utf8'));
+}
+
+function carregarPromocoes() {
+  return JSON.parse(fs.readFileSync('./resources/promotions.json', 'utf8'));
+}
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -9,9 +15,16 @@ module.exports = {
     .setDescription('Exibe o catálogo de produtos disponíveis'),
 
   async execute(interaction) {
-    const itens = Object.entries(produtos).map(
-      ([id, produto]) => `${id}. ${produto.nome} - R$${produto.preco.toFixed(2)}`
-    );
+    const produtos = carregarProdutos();
+    const promocoes = carregarPromocoes();
+
+    const itens = Object.entries(produtos).map(([id, produto]) => {
+      const promo = promocoes[id];
+      if (promo) {
+        return `${id}. ${produto.nome} ~~R$${produto.preco.toFixed(2)}~~ ➝ **R$${promo.preco_promocional.toFixed(2)}** 🔖`;
+      }
+      return `${id}. ${produto.nome} - R$${produto.preco.toFixed(2)}`;
+    });
 
     const catalogoEmbed = new EmbedBuilder()
       .setColor(0x3498db)

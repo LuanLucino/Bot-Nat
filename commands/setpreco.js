@@ -54,6 +54,8 @@ module.exports = {
     const antigoPreco = produtos[produtoId].preco;
     produtos[produtoId].preco = novoPreco;
     fs.writeFileSync(produtosPath, JSON.stringify(produtos, null, 2));
+    // Recarregar produtos para refletir alteração
+    produtos = JSON.parse(fs.readFileSync(produtosPath, 'utf8'));
 
     const confirmEmbed = new EmbedBuilder()
       .setColor(0x3498db)
@@ -85,6 +87,27 @@ module.exports = {
       }
     } catch (error) {
       console.error("Erro ao enviar para canal de administração:", error);
+    }
+
+    // Canal de promoções para notificação pública
+    const promoChannelId = "1475641664914591946";
+    try {
+      const promoChannel = await interaction.client.channels.fetch(promoChannelId);
+      if (promoChannel) {
+        const promoEmbed = new EmbedBuilder()
+          .setColor(0x2980b9)
+          .setTitle("🔄 Preço atualizado")
+          .setDescription(`O produto **${produtos[produtoId].nome}** teve seu preço alterado.`)
+          .addFields(
+            { name: "Preço antigo", value: `R$${antigoPreco.toFixed(2)}`, inline: true },
+            { name: "Novo preço", value: `R$${novoPreco.toFixed(2)}`, inline: true }
+          )
+          .setTimestamp();
+
+        await promoChannel.send({ embeds: [promoEmbed] });
+      }
+    } catch (error) {
+      console.error("Erro ao enviar para canal de promoções:", error);
     }
   },
 

@@ -1,8 +1,13 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const fs = require('fs');
 
-const produtos = JSON.parse(fs.readFileSync('./resources/products.json', 'utf8'));
-const promocoes = JSON.parse(fs.readFileSync('./resources/promotions.json', 'utf8'));
+function carregarProdutos() {
+  return JSON.parse(fs.readFileSync('./resources/products.json', 'utf8'));
+}
+
+function carregarPromocoes() {
+  return JSON.parse(fs.readFileSync('./resources/promotions.json', 'utf8'));
+}
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -10,10 +15,13 @@ module.exports = {
     .setDescription('Exibe as promoções atuais'),
 
   async execute(interaction) {
+    const produtos = carregarProdutos();
+    const promocoes = carregarPromocoes();
+
     const itensPromocao = Object.entries(promocoes).map(([id, promo]) => {
       const produto = produtos[id];
       if (!produto) return null;
-      return `${id}. ${produto.nome} ~~R$${produto.preco.toFixed(2)}~~ ➝ **R$${promo.preco_promocional.toFixed(2)}**`;
+      return `${id}. ${produto.nome} ~~R$${produto.preco.toFixed(2)}~~ ➝ **R$${promo.preco_promocional.toFixed(2)}** 🔖`;
     }).filter(Boolean);
 
     if (itensPromocao.length === 0) {
