@@ -68,27 +68,6 @@ module.exports = {
 
     await interaction.reply({ embeds: [confirmEmbed], ephemeral: true });
 
-    // Canal de administração para log
-    const adminChannelId = process.env.ADMIN_CHANNEL_ID;
-    try {
-      const adminChannel = await interaction.client.channels.fetch(adminChannelId);
-      if (adminChannel) {
-        const logEmbed = new EmbedBuilder()
-          .setColor(0x3498db)
-          .setTitle("📢 Preço atualizado")
-          .setDescription(`O produto **${produtos[produtoId].nome}** teve seu preço alterado.`)
-          .addFields(
-            { name: "Preço antigo", value: `R$${antigoPreco.toFixed(2)}`, inline: true },
-            { name: "Novo preço", value: `R$${novoPreco.toFixed(2)}`, inline: true }
-          )
-          .setTimestamp();
-
-        await adminChannel.send({ embeds: [logEmbed] });
-      }
-    } catch (error) {
-      console.error("Erro ao enviar para canal de administração:", error);
-    }
-
     // Canal de promoções para notificação pública
     const promoChannelId = "1475641664914591946";
     try {
