@@ -7,6 +7,10 @@ const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('
 
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
+  if (!command.data) {
+    console.error(`⚠️ O arquivo ${file} não exporta 'data'. Verifique se está no formato correto.`);
+    continue;
+  }
   commands.push(command.data.toJSON());
 }
 

@@ -6,7 +6,7 @@ require('dotenv').config();
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 client.commands = new Collection();
 
-// Carregar todos os comandos da pasta
+// Carregar todos os comandos da pasta ./commands
 const commandsPath = path.join(__dirname, 'commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
@@ -15,37 +15,17 @@ for (const file of commandFiles) {
   client.commands.set(command.data.name, command);
 }
 
-// Evento correto para quando o bot fica online
-client.once('clientReady', () => {
-  console.log(`Bot online como ${client.user.tag}`);
-});
+// Carregar todos os eventos da pasta ./events
+const eventsPath = path.join(__dirname, 'events');
+const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
 
-client.on('interactionCreate', async interaction => {
-  // Handler para autocomplete
-  if (interaction.isAutocomplete()) {
-    const command = client.commands.get(interaction.commandName);
-    if (!command || !command.autocomplete) return;
-
-    try {
-      await command.autocomplete(interaction);
-    } catch (error) {
-      console.error("Erro no autocomplete:", error);
-    }
-    return;
+for (const file of eventFiles) {
+  const event = require(path.join(eventsPath, file));
+  if (event.once) {
+    client.once(event.name, (...args) => event.execute(...args, client));
+  } else {
+    client.on(event.name, (...args) => event.execute(...args, client));
   }
-
-  // Handler para comandos normais
-  if (interaction.isChatInputCommand()) {
-    const command = client.commands.get(interaction.commandName);
-    if (!command) return;
-
-    try {
-      await command.execute(interaction);
-    } catch (error) {
-      console.error(error);
-      await interaction.reply({ content: 'Houve um erro ao executar este comando!', ephemeral: true });
-    }
-  }
-});
+}
 
 client.login(process.env.TOKEN);
