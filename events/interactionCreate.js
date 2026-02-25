@@ -41,11 +41,26 @@ module.exports = {
       try {
         const guild = interaction.guild;
         const categoryId = "1476324901253025844"; // Categoria Carrinhos
+        const roleVendasId = "1476326465229553775"; // Cargo de vendas
 
         const channel = await guild.channels.create({
           name: `${interaction.user.username}-compra`,
           type: ChannelType.GuildText,
-          parent: categoryId
+          parent: categoryId,
+          permissionOverwrites: [
+            {
+              id: guild.id,
+              deny: ['ViewChannel'],
+            },
+            {
+              id: interaction.user.id,
+              allow: ['ViewChannel', 'SendMessages'],
+            },
+            {
+              id: roleVendasId,
+              allow: ['ViewChannel', 'SendMessages'],
+            }
+          ]
         });
 
         const embed = new EmbedBuilder()
@@ -87,19 +102,27 @@ module.exports = {
     // Handler do Select Menu de pagamento
     if (interaction.isStringSelectMenu() && interaction.customId === 'forma_pagamento') {
       const escolha = interaction.values[0];
+      const finalizadosId = "1476341804981948510"; // Categoria Finalizados
+      const roleVendasId = "1476326465229553775";
 
       if (escolha === 'cartao') {
         await interaction.reply({ content: "💳 Checkout gerado para pagamento com cartão.", ephemeral: true });
-        // Aqui você pode integrar com API de checkout e gerar link
-        const finalizadosId = "1476341804981948510";
-        await interaction.channel.setParent(finalizadosId).catch(err => console.error("Erro ao mover canal:", err));
+        await interaction.channel.setParent(finalizadosId);
+        await interaction.channel.permissionOverwrites.set([
+          { id: interaction.guild.id, deny: ['ViewChannel'] },
+          { id: interaction.user.id, allow: ['ViewChannel', 'SendMessages'] },
+          { id: roleVendasId, allow: ['ViewChannel', 'SendMessages'] }
+        ]);
       }
 
       if (escolha === 'pix') {
         await interaction.reply({ content: "🔑 Instruções de pagamento via Pix serão enviadas.", ephemeral: true });
-        // Aqui você pode integrar com API de Pix
-        const finalizadosId = "1476341804981948510";
-        await interaction.channel.setParent(finalizadosId).catch(err => console.error("Erro ao mover canal:", err));
+        await interaction.channel.setParent(finalizadosId);
+        await interaction.channel.permissionOverwrites.set([
+          { id: interaction.guild.id, deny: ['ViewChannel'] },
+          { id: interaction.user.id, allow: ['ViewChannel', 'SendMessages'] },
+          { id: roleVendasId, allow: ['ViewChannel', 'SendMessages'] }
+        ]);
       }
       return;
     }
@@ -132,10 +155,17 @@ module.exports = {
 
     // Handler dos botões de confirmação de cancelamento
     if (interaction.isButton()) {
+      const finalizadosId = "1476341804981948510"; // Categoria Finalizados
+      const roleVendasId = "1476326465229553775";
+
       if (interaction.customId === 'confirmar_cancelamento') {
         await interaction.reply({ content: "❌ Compra cancelada. O ticket foi movido para finalizados.", ephemeral: true });
-        const finalizadosId = "1476341804981948510";
-        await interaction.channel.setParent(finalizadosId).catch(err => console.error("Erro ao mover canal:", err));
+        await interaction.channel.setParent(finalizadosId);
+        await interaction.channel.permissionOverwrites.set([
+          { id: interaction.guild.id, deny: ['ViewChannel'] },
+          { id: interaction.user.id, allow: ['ViewChannel', 'SendMessages'] },
+          { id: roleVendasId, allow: ['ViewChannel', 'SendMessages'] }
+        ]);
       }
 
       if (interaction.customId === 'manter_compra') {
