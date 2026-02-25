@@ -7,7 +7,9 @@ require('dotenv').config();
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 client.commands = new Collection();
 
-// Carregar todos os comandos da pasta ./commands
+// ----------------------
+// Carregar comandos
+// ----------------------
 const commandsPath = path.join(__dirname, 'commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
@@ -16,7 +18,9 @@ for (const file of commandFiles) {
   client.commands.set(command.data.name, command);
 }
 
-// Carregar todos os eventos da pasta ./events
+// ----------------------
+// Carregar eventos
+// ----------------------
 const eventsPath = path.join(__dirname, 'events');
 const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
 
@@ -29,7 +33,9 @@ for (const file of eventFiles) {
   }
 }
 
+// ----------------------
 // Inicializa o bot
+// ----------------------
 client.login(process.env.TOKEN);
 
 // ----------------------
@@ -46,12 +52,12 @@ app.post('/pagbank-webhook', async (req, res) => {
 
   if (status === "PAID") {
     try {
-      // Buscar o canal do ticket pelo reference_id
+      // Buscar o canal do ticket pelo reference_id (que foi definido como canal.id ao criar a ordem)
       const channel = await client.channels.fetch(reference_id);
 
       if (channel) {
         // Mover o canal para a categoria "Finalizados"
-        const finalizadosCategoryId = process.env.FINALIZADOS_CATEGORY_ID; 
+        const finalizadosCategoryId = process.env.FINALIZADOS_CATEGORY_ID;
         await channel.setParent(finalizadosCategoryId);
 
         // Avisar dentro do ticket
