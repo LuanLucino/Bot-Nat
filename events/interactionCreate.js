@@ -3,7 +3,8 @@ const {
   ActionRowBuilder, 
   StringSelectMenuBuilder, 
   ButtonBuilder, 
-  ButtonStyle 
+  ButtonStyle, 
+  ChannelType 
 } = require('discord.js');
 
 module.exports = {
@@ -37,48 +38,53 @@ module.exports = {
 
     // Botão "Comprar" → cria ticket
     if (interaction.isButton() && interaction.customId === 'comprar_produto') {
-      const guild = interaction.guild;
-      const categoryId = "1476324901253025844"; // Categoria Carrinhos
-      const roleVendasId = "1476326465229553775"; // ID do cargo da equipe de vendas
+      try {
+        const guild = interaction.guild;
+        const categoryId = "1476324901253025844"; // Categoria Carrinhos
+        const roleVendasId = "1476326465229553775"; // Cargo de vendas
 
-      const channel = await guild.channels.create({
-        name: `${interaction.user.username}-compra`,
-        type: 0, // texto
-        parent: categoryId,
-        permissionOverwrites: [
-          {
-            id: guild.id,
-            deny: ['ViewChannel'],
-          },
-          {
-            id: interaction.user.id,
-            allow: ['ViewChannel', 'SendMessages'],
-          },
-          {
-            id: roleVendasId,
-            allow: ['ViewChannel', 'SendMessages'],
-          }
-        ]
-      });
+        const channel = await guild.channels.create({
+          name: `${interaction.user.username}-compra`,
+          type: ChannelType.GuildText,
+          parent: categoryId,
+          permissionOverwrites: [
+            {
+              id: guild.id,
+              deny: ['ViewChannel'],
+            },
+            {
+              id: interaction.user.id,
+              allow: ['ViewChannel', 'SendMessages'],
+            },
+            {
+              id: roleVendasId,
+              allow: ['ViewChannel', 'SendMessages'],
+            }
+          ]
+        });
 
-      const embed = new EmbedBuilder()
-        .setColor(0x2ecc71)
-        .setTitle("🛒 Ticket de Compra")
-        .setDescription("Selecione abaixo a forma de pagamento para continuar sua compra.");
+        const embed = new EmbedBuilder()
+          .setColor(0x2ecc71)
+          .setTitle("🛒 Ticket de Compra")
+          .setDescription("Selecione abaixo a forma de pagamento para continuar sua compra.");
 
-      const rowPagamento = new ActionRowBuilder().addComponents(
-        new StringSelectMenuBuilder()
-          .setCustomId('forma_pagamento')
-          .setPlaceholder('Selecione a forma de pagamento')
-          .addOptions([
-            { label: 'Cartão', value: 'cartao' },
-            { label: 'Pix', value: 'pix' },
-            { label: 'Cancelar Pedido', value: 'cancelar' }
-          ])
-      );
+        const rowPagamento = new ActionRowBuilder().addComponents(
+          new StringSelectMenuBuilder()
+            .setCustomId('forma_pagamento')
+            .setPlaceholder('Selecione a forma de pagamento')
+            .addOptions([
+              { label: 'Cartão', value: 'cartao' },
+              { label: 'Pix', value: 'pix' },
+              { label: 'Cancelar Pedido', value: 'cancelar' }
+            ])
+        );
 
-      await channel.send({ content: `<@${interaction.user.id}>`, embeds: [embed], components: [rowPagamento] });
-      await interaction.reply({ content: "✅ Ticket de compra criado!", ephemeral: true });
+        await channel.send({ content: `<@${interaction.user.id}>`, embeds: [embed], components: [rowPagamento] });
+        await interaction.reply({ content: "✅ Ticket de compra criado!", ephemeral: true });
+      } catch (error) {
+        console.error("Erro ao criar ticket:", error);
+        await interaction.reply({ content: "❌ Não foi possível criar o ticket.", ephemeral: true });
+      }
       return;
     }
 
