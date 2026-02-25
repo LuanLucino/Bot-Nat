@@ -11,6 +11,10 @@ module.exports = {
   name: 'interactionCreate',
   once: false,
   async execute(interaction, client) {
+    const categoryCarrinhos = "1476324901253025844"; // Categoria Carrinhos
+    const categoryFinalizados = "1476341804981948510"; // Categoria Compras Finalizadas
+    const roleVendasId = "1476326465229553775"; // Cargo de vendas
+
     // Handler para autocomplete
     if (interaction.isAutocomplete()) {
       const command = client.commands.get(interaction.commandName);
@@ -39,16 +43,12 @@ module.exports = {
     // Botão "Comprar" → cria ticket
     if (interaction.isButton() && interaction.customId === 'comprar_produto') {
       try {
-        const guild = interaction.guild;
-        const categoryId = "1476324901253025844"; // Categoria Carrinhos
-        const roleVendasId = "1476326465229553775"; // Cargo de vendas
-
-        const channel = await guild.channels.create({
+        const channel = await interaction.guild.channels.create({
           name: `${interaction.user.username}-compra`,
           type: ChannelType.GuildText,
-          parent: categoryId,
+          parent: categoryCarrinhos,
           permissionOverwrites: [
-            { id: guild.id, deny: ['ViewChannel'] },
+            { id: interaction.guild.id, deny: ['ViewChannel'] },
             { id: interaction.user.id, allow: ['ViewChannel', 'SendMessages'] },
             { id: roleVendasId, allow: ['ViewChannel', 'SendMessages'] }
           ]
@@ -93,12 +93,10 @@ module.exports = {
     // Handler do Select Menu de pagamento
     if (interaction.isStringSelectMenu() && interaction.customId === 'forma_pagamento') {
       const escolha = interaction.values[0];
-      const finalizadosId = "1476341804981948510"; // Categoria Finalizados
-      const roleVendasId = "1476326465229553775";
 
       if (escolha === 'cartao') {
         await interaction.reply({ content: "💳 Checkout gerado para pagamento com cartão.", ephemeral: true });
-        await interaction.channel.setParent(finalizadosId);
+        await interaction.channel.setParent(categoryFinalizados, { lockPermissions: false });
         await interaction.channel.permissionOverwrites.set([
           { id: interaction.guild.id, deny: ['ViewChannel'] },
           { id: roleVendasId, allow: ['ViewChannel', 'SendMessages'] }
@@ -107,7 +105,7 @@ module.exports = {
 
       if (escolha === 'pix') {
         await interaction.reply({ content: "🔑 Instruções de pagamento via Pix foram enviadas.", ephemeral: true });
-        await interaction.channel.setParent(finalizadosId);
+        await interaction.channel.setParent(categoryFinalizados, { lockPermissions: false });
         await interaction.channel.permissionOverwrites.set([
           { id: interaction.guild.id, deny: ['ViewChannel'] },
           { id: roleVendasId, allow: ['ViewChannel', 'SendMessages'] }
@@ -144,12 +142,9 @@ module.exports = {
 
     // Handler dos botões de confirmação de cancelamento
     if (interaction.isButton()) {
-      const finalizadosId = "1476341804981948510"; // Categoria Finalizados
-      const roleVendasId = "1476326465229553775";
-
       if (interaction.customId === 'confirmar_cancelamento') {
         await interaction.reply({ content: "❌ Compra cancelada. O ticket foi movido para finalizados.", ephemeral: true });
-        await interaction.channel.setParent(finalizadosId);
+        await interaction.channel.setParent(categoryFinalizados, { lockPermissions: false });
         await interaction.channel.permissionOverwrites.set([
           { id: interaction.guild.id, deny: ['ViewChannel'] },
           { id: roleVendasId, allow: ['ViewChannel', 'SendMessages'] }
