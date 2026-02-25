@@ -8,7 +8,7 @@ const {
 } = require('discord.js');
 
 // Importa o módulo de pagamento
-const { gerarCheckout } = require('../payments/mercadopago');
+const { gerarCheckout } = require('../payments/pagbank');
 
 module.exports = {
   name: 'interactionCreate',
