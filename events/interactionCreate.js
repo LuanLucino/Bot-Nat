@@ -1,4 +1,4 @@
-const { EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
+const { EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 
 module.exports = {
   name: 'interactionCreate',
@@ -31,22 +31,34 @@ module.exports = {
       return;
     }
 
-    // Handler do botão "Comprar"
+    // Handler do botão "Comprar" → mostra Select Menu
     if (interaction.isButton() && interaction.customId === 'comprar_produto') {
+      const row = new ActionRowBuilder().addComponents(
+        new StringSelectMenuBuilder()
+          .setCustomId('select_modelo')
+          .setPlaceholder('Selecione o modelo')
+          .addOptions([
+            { label: 'Masculino', value: 'masculino' },
+            { label: 'Feminino', value: 'feminino' },
+            { label: 'Ambos', value: 'ambos' }
+          ])
+      );
+
+      await interaction.reply({ content: 'Escolha o modelo:', components: [row], ephemeral: true });
+      return;
+    }
+
+    // Handler do Select Menu → abre modal
+    if (interaction.isStringSelectMenu() && interaction.customId === 'select_modelo') {
+      const modelo = interaction.values[0];
+
       const modal = new ModalBuilder()
-        .setCustomId('modal_comprar_produto')
+        .setCustomId(`modal_comprar_produto_${modelo}`)
         .setTitle('🛒 Finalizar Compra');
 
       const nomeInput = new TextInputBuilder()
         .setCustomId('nome_cliente')
         .setLabel('Seu nome completo')
-        .setStyle(TextInputStyle.Short)
-        .setRequired(true);
-
-      // Campo Modelo (substitui Quantidade)
-      const modeloInput = new TextInputBuilder()
-        .setCustomId('modelo')
-        .setLabel('Modelo (Masculino, Feminino ou Ambos)')
         .setStyle(TextInputStyle.Short)
         .setRequired(true);
 
@@ -58,7 +70,6 @@ module.exports = {
 
       modal.addComponents(
         new ActionRowBuilder().addComponents(nomeInput),
-        new ActionRowBuilder().addComponents(modeloInput),
         new ActionRowBuilder().addComponents(obsInput)
       );
 
@@ -67,9 +78,9 @@ module.exports = {
     }
 
     // Handler do modal enviado
-    if (interaction.isModalSubmit() && interaction.customId === 'modal_comprar_produto') {
+    if (interaction.isModalSubmit() && interaction.customId.startsWith('modal_comprar_produto_')) {
+      const modelo = interaction.customId.replace('modal_comprar_produto_', '');
       const nomeCliente = interaction.fields.getTextInputValue('nome_cliente');
-      const modelo = interaction.fields.getTextInputValue('modelo');
       const observacoes = interaction.fields.getTextInputValue('observacoes');
 
       const confirmEmbed = new EmbedBuilder()
