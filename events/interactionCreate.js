@@ -38,7 +38,7 @@ module.exports = {
         await command.execute(interaction);
       } catch (error) {
         console.error(error);
-        await interaction.reply({ content: 'Houve um erro ao executar este comando!', ephemeral: true });
+        await interaction.reply({ content: 'Houve um erro ao executar este comando!', flags: 64 });
       }
       return;
     }
@@ -85,10 +85,10 @@ module.exports = {
           components: [rowPagamento, rowCancelar] 
         });
 
-        await interaction.reply({ content: "✅ Ticket de compra criado!", ephemeral: true });
+        await interaction.reply({ content: "✅ Ticket de compra criado!", flags: 64 });
       } catch (error) {
         console.error("Erro ao criar ticket:", error);
-        await interaction.reply({ content: "❌ Não foi possível criar o ticket.", ephemeral: true });
+        await interaction.reply({ content: "❌ Não foi possível criar o ticket.", flags: 64 });
       }
       return;
     }
@@ -100,7 +100,7 @@ module.exports = {
       if (escolha === 'cartao') {
         try {
           const link = await gerarCheckout("Compra via Cartão", 15.00);
-          await interaction.reply({ content: `💳 Pague com cartão aqui: ${link}`, ephemeral: true });
+          await interaction.reply({ content: `💳 Pague com cartão aqui: ${link}`, flags: 64 });
           await interaction.channel.setParent(categoryFinalizados, { lockPermissions: false });
           await interaction.channel.permissionOverwrites.set([
             { id: interaction.guild.id, deny: ['ViewChannel'] },
@@ -108,14 +108,14 @@ module.exports = {
           ]);
         } catch (err) {
           console.error("Erro no checkout cartão:", err);
-          await interaction.reply({ content: "❌ Erro ao gerar checkout de cartão.", ephemeral: true });
+          await interaction.reply({ content: "❌ Erro ao gerar checkout de cartão.", flags: 64 });
         }
       }
 
       if (escolha === 'pix') {
         try {
           const link = await gerarCheckout("Compra via Pix", 15.00);
-          await interaction.reply({ content: `🔑 Pague via Pix aqui: ${link}`, ephemeral: true });
+          await interaction.reply({ content: `🔑 Pague via Pix aqui: ${link}`, flags: 64 });
           await interaction.channel.setParent(categoryFinalizados, { lockPermissions: false });
           await interaction.channel.permissionOverwrites.set([
             { id: interaction.guild.id, deny: ['ViewChannel'] },
@@ -123,7 +123,7 @@ module.exports = {
           ]);
         } catch (err) {
           console.error("Erro no checkout Pix:", err);
-          await interaction.reply({ content: "❌ Erro ao gerar checkout Pix.", ephemeral: true });
+          await interaction.reply({ content: "❌ Erro ao gerar checkout Pix.", flags: 64 });
         }
       }
       return;
@@ -150,7 +150,7 @@ module.exports = {
             .setDescription("Tem certeza que deseja cancelar a compra? Ao confirmar, o ticket será movido para finalizados e você não terá mais acesso.")
         ],
         components: [rowConfirmacao],
-        ephemeral: true
+        flags: 64
       });
       return;
     }
@@ -158,7 +158,7 @@ module.exports = {
     // Handler dos botões de confirmação de cancelamento
     if (interaction.isButton()) {
       if (interaction.customId === 'confirmar_cancelamento') {
-        await interaction.reply({ content: "❌ Compra cancelada. O ticket foi movido para finalizados.", ephemeral: true });
+        await interaction.reply({ content: "❌ Compra cancelada. O ticket foi movido para finalizados.", flags: 64 });
         await interaction.channel.setParent(categoryFinalizados, { lockPermissions: false });
         await interaction.channel.permissionOverwrites.set([
           { id: interaction.guild.id, deny: ['ViewChannel'] },
@@ -167,7 +167,7 @@ module.exports = {
       }
 
       if (interaction.customId === 'manter_compra') {
-        await interaction.reply({ content: "✅ Compra mantida. Continue o processo normalmente.", ephemeral: true });
+        await interaction.reply({ content: "✅ Compra mantida. Continue o processo normalmente.", flags: 64 });
       }
     }
   }
