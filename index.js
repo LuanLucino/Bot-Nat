@@ -39,12 +39,28 @@ const app = express();
 app.use(express.json());
 
 // Endpoint para receber notificações do PagBank
-app.post('/pagbank-webhook', (req, res) => {
+app.post('/pagbank-webhook', async (req, res) => {
   console.log("Notificação recebida:", req.body);
 
-  // Aqui você pode verificar o status do pagamento
-  // Exemplo: se status === "PAID", mover o ticket para finalizados
-  // Você terá que implementar a lógica de buscar o canal e atualizar permissões
+  const { status, reference_id } = req.body;
+
+  if (status === "PAID") {
+    try {
+      // Buscar o canal do ticket pelo reference_id
+      const channel = await client.channels.fetch(reference_id);
+
+      if (channel) {
+        // Mover o canal para a categoria "Finalizados"
+        const finalizadosCategoryId = process.env.FINALIZADOS_CATEGORY_ID; 
+        await channel.setParent(finalizadosCategoryId);
+
+        // Avisar dentro do ticket
+        await channel.send("✅ Pagamento confirmado! Este ticket foi movido para Finalizados.");
+      }
+    } catch (error) {
+      console.error("Erro ao mover ticket:", error);
+    }
+  }
 
   res.sendStatus(200);
 });
