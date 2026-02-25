@@ -48,18 +48,9 @@ module.exports = {
           type: ChannelType.GuildText,
           parent: categoryId,
           permissionOverwrites: [
-            {
-              id: guild.id,
-              deny: ['ViewChannel'],
-            },
-            {
-              id: interaction.user.id,
-              allow: ['ViewChannel', 'SendMessages'],
-            },
-            {
-              id: roleVendasId,
-              allow: ['ViewChannel', 'SendMessages'],
-            }
+            { id: guild.id, deny: ['ViewChannel'] },
+            { id: interaction.user.id, allow: ['ViewChannel', 'SendMessages'] },
+            { id: roleVendasId, allow: ['ViewChannel', 'SendMessages'] }
           ]
         });
 
@@ -115,7 +106,7 @@ module.exports = {
       }
 
       if (escolha === 'pix') {
-        await interaction.reply({ content: "🔑 Instruções de pagamento via Pix serão enviadas.", ephemeral: true });
+        await interaction.reply({ content: "🔑 Instruções de pagamento via Pix foram enviadas.", ephemeral: true });
         await interaction.channel.setParent(finalizadosId);
         await interaction.channel.permissionOverwrites.set([
           { id: interaction.guild.id, deny: ['ViewChannel'] },
