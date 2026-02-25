@@ -7,6 +7,9 @@ const {
   ChannelType 
 } = require('discord.js');
 
+// Importa o módulo de pagamento
+const { gerarCheckout } = require('../payments/mercadopago');
+
 module.exports = {
   name: 'interactionCreate',
   once: false,
@@ -95,21 +98,33 @@ module.exports = {
       const escolha = interaction.values[0];
 
       if (escolha === 'cartao') {
-        await interaction.reply({ content: "💳 Checkout gerado para pagamento com cartão.", ephemeral: true });
-        await interaction.channel.setParent(categoryFinalizados, { lockPermissions: false });
-        await interaction.channel.permissionOverwrites.set([
-          { id: interaction.guild.id, deny: ['ViewChannel'] },
-          { id: roleVendasId, allow: ['ViewChannel', 'SendMessages'] }
-        ]);
+        try {
+          const link = await gerarCheckout("Compra via Cartão", 15.00);
+          await interaction.reply({ content: `💳 Pague com cartão aqui: ${link}`, ephemeral: true });
+          await interaction.channel.setParent(categoryFinalizados, { lockPermissions: false });
+          await interaction.channel.permissionOverwrites.set([
+            { id: interaction.guild.id, deny: ['ViewChannel'] },
+            { id: roleVendasId, allow: ['ViewChannel', 'SendMessages'] }
+          ]);
+        } catch (err) {
+          console.error("Erro no checkout cartão:", err);
+          await interaction.reply({ content: "❌ Erro ao gerar checkout de cartão.", ephemeral: true });
+        }
       }
 
       if (escolha === 'pix') {
-        await interaction.reply({ content: "🔑 Instruções de pagamento via Pix foram enviadas.", ephemeral: true });
-        await interaction.channel.setParent(categoryFinalizados, { lockPermissions: false });
-        await interaction.channel.permissionOverwrites.set([
-          { id: interaction.guild.id, deny: ['ViewChannel'] },
-          { id: roleVendasId, allow: ['ViewChannel', 'SendMessages'] }
-        ]);
+        try {
+          const link = await gerarCheckout("Compra via Pix", 15.00);
+          await interaction.reply({ content: `🔑 Pague via Pix aqui: ${link}`, ephemeral: true });
+          await interaction.channel.setParent(categoryFinalizados, { lockPermissions: false });
+          await interaction.channel.permissionOverwrites.set([
+            { id: interaction.guild.id, deny: ['ViewChannel'] },
+            { id: roleVendasId, allow: ['ViewChannel', 'SendMessages'] }
+          ]);
+        } catch (err) {
+          console.error("Erro no checkout Pix:", err);
+          await interaction.reply({ content: "❌ Erro ao gerar checkout Pix.", ephemeral: true });
+        }
       }
       return;
     }
