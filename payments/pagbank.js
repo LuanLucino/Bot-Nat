@@ -1,12 +1,23 @@
 const fetch = require("node-fetch");
 
-// Função para criar uma ordem de pagamento no PagBank
-async function criarOrdemPagamento(orderData) {
+// Função para gerar checkout (ordem de pagamento)
+async function gerarCheckout(descricao, valor, referenceId) {
   try {
+    const orderData = {
+      reference_id: referenceId, // ID do canal do ticket
+      items: [
+        {
+          name: descricao,
+          quantity: 1,
+          unit_amount: Math.round(valor * 100) // valor em centavos
+        }
+      ]
+    };
+
     const response = await fetch("https://api.pagseguro.com/orders", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.PAGBANK_TOKEN}`, // Token da aplicação
+        "Authorization": `Bearer ${process.env.PAGBANK_TOKEN}`, // token da aplicação
         "Content-Type": "application/json"
       },
       body: JSON.stringify(orderData)
@@ -17,37 +28,15 @@ async function criarOrdemPagamento(orderData) {
     }
 
     const data = await response.json();
-    return data; // Retorna os dados da ordem (inclui link de pagamento)
+
+    // Retorna o link de pagamento
+    return data.links[0].href;
   } catch (error) {
     console.error("Erro na integração com PagBank:", error);
     throw error;
   }
 }
 
-// Função para consultar status de uma ordem
-async function consultarOrdem(orderId) {
-  try {
-    const response = await fetch(`https://api.pagseguro.com/orders/${orderId}`, {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${process.env.PAGBANK_TOKEN}`,
-        "Content-Type": "application/json"
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`Erro ao consultar ordem: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return data; // Retorna status da ordem
-  } catch (error) {
-    console.error("Erro ao consultar ordem:", error);
-    throw error;
-  }
-}
-
 module.exports = {
-  criarOrdemPagamento,
-  consultarOrdem
+  gerarCheckout
 };

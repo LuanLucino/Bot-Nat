@@ -79,6 +79,9 @@ module.exports = {
             .setStyle(ButtonStyle.Danger)
         );
 
+        // Guardar o ID do canal no objeto da interação para usar depois
+        interaction.channelCriado = channel;
+
         await channel.send({ 
           content: `<@${interaction.user.id}>`, 
           embeds: [embed], 
@@ -99,13 +102,9 @@ module.exports = {
 
       if (escolha === 'cartao') {
         try {
-          const link = await gerarCheckout("Compra via Cartão", 15.00);
+          // Passa o ID do canal como reference_id
+          const link = await gerarCheckout("Compra via Cartão", 15.00, interaction.channel.id);
           await interaction.reply({ content: `💳 Pague com cartão aqui: ${link}`, flags: 64 });
-          await interaction.channel.setParent(categoryFinalizados, { lockPermissions: false });
-          await interaction.channel.permissionOverwrites.set([
-            { id: interaction.guild.id, deny: ['ViewChannel'] },
-            { id: roleVendasId, allow: ['ViewChannel', 'SendMessages'] }
-          ]);
         } catch (err) {
           console.error("Erro no checkout cartão:", err);
           await interaction.reply({ content: "❌ Erro ao gerar checkout de cartão.", flags: 64 });
@@ -114,13 +113,9 @@ module.exports = {
 
       if (escolha === 'pix') {
         try {
-          const link = await gerarCheckout("Compra via Pix", 15.00);
+          // Passa o ID do canal como reference_id
+          const link = await gerarCheckout("Compra via Pix", 15.00, interaction.channel.id);
           await interaction.reply({ content: `🔑 Pague via Pix aqui: ${link}`, flags: 64 });
-          await interaction.channel.setParent(categoryFinalizados, { lockPermissions: false });
-          await interaction.channel.permissionOverwrites.set([
-            { id: interaction.guild.id, deny: ['ViewChannel'] },
-            { id: roleVendasId, allow: ['ViewChannel', 'SendMessages'] }
-          ]);
         } catch (err) {
           console.error("Erro no checkout Pix:", err);
           await interaction.reply({ content: "❌ Erro ao gerar checkout Pix.", flags: 64 });
