@@ -41,26 +41,12 @@ module.exports = {
       try {
         const guild = interaction.guild;
         const categoryId = "1476324901253025844"; // Categoria Carrinhos
-        const roleVendasId = "1476326465229553775"; // Cargo de vendas
 
         const channel = await guild.channels.create({
           name: `${interaction.user.username}-compra`,
           type: ChannelType.GuildText,
-          parent: categoryId,
-          permissionOverwrites: [
-            {
-              id: guild.id,
-              deny: ['ViewChannel'],
-            },
-            {
-              id: interaction.user.id,
-              allow: ['ViewChannel', 'SendMessages'],
-            },
-            {
-              id: roleVendasId,
-              allow: ['ViewChannel', 'SendMessages'],
-            }
-          ]
+          parent: categoryId
+          // Sem permissionOverwrites → usa configuração padrão da categoria
         });
 
         const embed = new EmbedBuilder()
