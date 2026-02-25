@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
+const express = require('express');
 require('dotenv').config();
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -28,4 +29,28 @@ for (const file of eventFiles) {
   }
 }
 
+// Inicializa o bot
 client.login(process.env.TOKEN);
+
+// ----------------------
+// Servidor Express
+// ----------------------
+const app = express();
+app.use(express.json());
+
+// Endpoint para receber notificações do PagBank
+app.post('/pagbank-webhook', (req, res) => {
+  console.log("Notificação recebida:", req.body);
+
+  // Aqui você pode verificar o status do pagamento
+  // Exemplo: se status === "PAID", mover o ticket para finalizados
+  // Você terá que implementar a lógica de buscar o canal e atualizar permissões
+
+  res.sendStatus(200);
+});
+
+// Railway vai expor essa porta automaticamente
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Webhook PagBank rodando na porta ${PORT}`);
+});
