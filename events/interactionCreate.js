@@ -1,4 +1,10 @@
-const { EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
+const { 
+  EmbedBuilder, 
+  ActionRowBuilder, 
+  StringSelectMenuBuilder, 
+  ButtonBuilder, 
+  ButtonStyle 
+} = require('discord.js');
 
 module.exports = {
   name: 'interactionCreate',
@@ -8,7 +14,6 @@ module.exports = {
     if (interaction.isAutocomplete()) {
       const command = client.commands.get(interaction.commandName);
       if (!command || !command.autocomplete) return;
-
       try {
         await command.autocomplete(interaction);
       } catch (error) {
@@ -21,7 +26,6 @@ module.exports = {
     if (interaction.isChatInputCommand()) {
       const command = client.commands.get(interaction.commandName);
       if (!command) return;
-
       try {
         await command.execute(interaction);
       } catch (error) {
@@ -31,79 +35,102 @@ module.exports = {
       return;
     }
 
-    // Handler do botão "Comprar"
+    // Botão "Comprar" → cria ticket
     if (interaction.isButton() && interaction.customId === 'comprar_produto') {
-      const modal = new ModalBuilder()
-        .setCustomId('modal_comprar_produto')
-        .setTitle('🛒 Finalizar Compra');
+      const guild = interaction.guild;
+      const categoryId = "1476324901253025844"; // Categoria Carrinhos
+      const roleVendasId = "1476326465229553775"; // ID do cargo da equipe de vendas
 
-      const nomeInput = new TextInputBuilder()
-        .setCustomId('nome_cliente')
-        .setLabel('Seu nome completo')
-        .setStyle(TextInputStyle.Short)
-        .setRequired(true);
+      const channel = await guild.channels.create({
+        name: `${interaction.user.username}-compra`,
+        type: 0, // texto
+        parent: categoryId,
+        permissionOverwrites: [
+          {
+            id: guild.id,
+            deny: ['ViewChannel'],
+          },
+          {
+            id: interaction.user.id,
+            allow: ['ViewChannel', 'SendMessages'],
+          },
+          {
+            id: roleVendasId,
+            allow: ['ViewChannel', 'SendMessages'],
+          }
+        ]
+      });
 
-      // Campo Modelo (substitui Quantidade)
-      const modeloInput = new TextInputBuilder()
-        .setCustomId('modelo')
-        .setLabel('Modelo (Masculino, Feminino ou Ambos)')
-        .setStyle(TextInputStyle.Short)
-        .setRequired(true);
+      const embed = new EmbedBuilder()
+        .setColor(0x2ecc71)
+        .setTitle("🛒 Ticket de Compra")
+        .setDescription("Selecione abaixo a forma de pagamento para continuar sua compra.");
 
-      const obsInput = new TextInputBuilder()
-        .setCustomId('observacoes')
-        .setLabel('Observações (ex: tamanho, cor)')
-        .setStyle(TextInputStyle.Paragraph)
-        .setRequired(false);
-
-      modal.addComponents(
-        new ActionRowBuilder().addComponents(nomeInput),
-        new ActionRowBuilder().addComponents(modeloInput),
-        new ActionRowBuilder().addComponents(obsInput)
+      const rowPagamento = new ActionRowBuilder().addComponents(
+        new StringSelectMenuBuilder()
+          .setCustomId('forma_pagamento')
+          .setPlaceholder('Selecione a forma de pagamento')
+          .addOptions([
+            { label: 'Cartão', value: 'cartao' },
+            { label: 'Pix', value: 'pix' },
+            { label: 'Cancelar Pedido', value: 'cancelar' }
+          ])
       );
 
-      await interaction.showModal(modal);
+      await channel.send({ content: `<@${interaction.user.id}>`, embeds: [embed], components: [rowPagamento] });
+      await interaction.reply({ content: "✅ Ticket de compra criado!", ephemeral: true });
       return;
     }
 
-    // Handler do modal enviado
-    if (interaction.isModalSubmit() && interaction.customId === 'modal_comprar_produto') {
-      const nomeCliente = interaction.fields.getTextInputValue('nome_cliente');
-      const modelo = interaction.fields.getTextInputValue('modelo');
-      const observacoes = interaction.fields.getTextInputValue('observacoes');
+    // Handler do Select Menu de pagamento
+    if (interaction.isStringSelectMenu() && interaction.customId === 'forma_pagamento') {
+      const escolha = interaction.values[0];
 
-      const confirmEmbed = new EmbedBuilder()
-        .setColor(0x2ecc71)
-        .setTitle("✅ Pedido registrado")
-        .setDescription("Seu pedido foi enviado com sucesso!")
-        .addFields(
-          { name: "Nome", value: nomeCliente, inline: true },
-          { name: "Modelo", value: modelo, inline: true },
-          { name: "Observações", value: observacoes || "Nenhuma", inline: false }
-        )
-        .setFooter({ text: "Um administrador entrará em contato para confirmar." });
+      if (escolha === 'cartao') {
+        await interaction.reply({ content: "💳 Checkout gerado para pagamento com cartão.", ephemeral: true });
+        // Aqui você pode integrar com API de checkout e gerar link
+      }
 
-      await interaction.reply({ embeds: [confirmEmbed], ephemeral: true });
+      if (escolha === 'pix') {
+        await interaction.reply({ content: "🔑 Instruções de pagamento via Pix serão enviadas.", ephemeral: true });
+        // Aqui você pode integrar com API de Pix
+      }
 
-      const adminChannelId = "1475643173005955235";
-      try {
-        const adminChannel = await client.channels.fetch(adminChannelId);
-        if (adminChannel) {
-          const adminEmbed = new EmbedBuilder()
-            .setColor(0xFFD700)
-            .setTitle("📦 Novo Pedido via anúncio")
-            .addFields(
-              { name: "Cliente", value: interaction.user.tag, inline: false },
-              { name: "Nome", value: nomeCliente, inline: true },
-              { name: "Modelo", value: modelo, inline: true },
-              { name: "Observações", value: observacoes || "Nenhuma", inline: false }
-            )
-            .setTimestamp();
+      if (escolha === 'cancelar') {
+        const rowConfirmacao = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId('confirmar_cancelamento')
+            .setLabel('Confirmar Cancelamento')
+            .setStyle(ButtonStyle.Danger),
+          new ButtonBuilder()
+            .setCustomId('manter_compra')
+            .setLabel('Manter Compra')
+            .setStyle(ButtonStyle.Primary)
+        );
 
-          await adminChannel.send({ embeds: [adminEmbed] });
-        }
-      } catch (error) {
-        console.error("Erro ao enviar pedido para canal de administração:", error);
+        await interaction.reply({ 
+          embeds: [
+            new EmbedBuilder()
+              .setColor(0xE74C3C)
+              .setTitle("⚠️ Confirmar Cancelamento")
+              .setDescription("Tem certeza que deseja cancelar a compra? Ao confirmar, o ticket será fechado.")
+          ],
+          components: [rowConfirmacao],
+          ephemeral: true
+        });
+      }
+      return;
+    }
+
+    // Handler dos botões de confirmação de cancelamento
+    if (interaction.isButton()) {
+      if (interaction.customId === 'confirmar_cancelamento') {
+        await interaction.reply({ content: "❌ Compra cancelada. O ticket será fechado.", ephemeral: true });
+        await interaction.channel.delete().catch(err => console.error("Erro ao deletar canal:", err));
+      }
+
+      if (interaction.customId === 'manter_compra') {
+        await interaction.reply({ content: "✅ Compra mantida. Continue o processo normalmente.", ephemeral: true });
       }
     }
   }
