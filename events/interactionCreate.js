@@ -46,13 +46,12 @@ module.exports = {
           name: `${interaction.user.username}-compra`,
           type: ChannelType.GuildText,
           parent: categoryId
-          // Sem permissionOverwrites → usa configuração padrão da categoria
         });
 
         const embed = new EmbedBuilder()
           .setColor(0x2ecc71)
           .setTitle("🛒 Ticket de Compra")
-          .setDescription("Selecione abaixo a forma de pagamento para continuar sua compra.");
+          .setDescription("Selecione abaixo a forma de pagamento ou cancele o pedido.");
 
         const rowPagamento = new ActionRowBuilder().addComponents(
           new StringSelectMenuBuilder()
@@ -60,12 +59,23 @@ module.exports = {
             .setPlaceholder('Selecione a forma de pagamento')
             .addOptions([
               { label: 'Cartão', value: 'cartao' },
-              { label: 'Pix', value: 'pix' },
-              { label: 'Cancelar Pedido', value: 'cancelar' }
+              { label: 'Pix', value: 'pix' }
             ])
         );
 
-        await channel.send({ content: `<@${interaction.user.id}>`, embeds: [embed], components: [rowPagamento] });
+        const rowCancelar = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId('cancelar_pedido')
+            .setLabel('Cancelar Pedido')
+            .setStyle(ButtonStyle.Danger)
+        );
+
+        await channel.send({ 
+          content: `<@${interaction.user.id}>`, 
+          embeds: [embed], 
+          components: [rowPagamento, rowCancelar] 
+        });
+
         await interaction.reply({ content: "✅ Ticket de compra criado!", ephemeral: true });
       } catch (error) {
         console.error("Erro ao criar ticket:", error);
@@ -87,30 +97,32 @@ module.exports = {
         await interaction.reply({ content: "🔑 Instruções de pagamento via Pix serão enviadas.", ephemeral: true });
         // Aqui você pode integrar com API de Pix
       }
+      return;
+    }
 
-      if (escolha === 'cancelar') {
-        const rowConfirmacao = new ActionRowBuilder().addComponents(
-          new ButtonBuilder()
-            .setCustomId('confirmar_cancelamento')
-            .setLabel('Confirmar Cancelamento')
-            .setStyle(ButtonStyle.Danger),
-          new ButtonBuilder()
-            .setCustomId('manter_compra')
-            .setLabel('Manter Compra')
-            .setStyle(ButtonStyle.Primary)
-        );
+    // Handler do botão Cancelar Pedido
+    if (interaction.isButton() && interaction.customId === 'cancelar_pedido') {
+      const rowConfirmacao = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId('confirmar_cancelamento')
+          .setLabel('Confirmar Cancelamento')
+          .setStyle(ButtonStyle.Danger),
+        new ButtonBuilder()
+          .setCustomId('manter_compra')
+          .setLabel('Manter Compra')
+          .setStyle(ButtonStyle.Primary)
+      );
 
-        await interaction.reply({ 
-          embeds: [
-            new EmbedBuilder()
-              .setColor(0xE74C3C)
-              .setTitle("⚠️ Confirmar Cancelamento")
-              .setDescription("Tem certeza que deseja cancelar a compra? Ao confirmar, o ticket será fechado.")
-          ],
-          components: [rowConfirmacao],
-          ephemeral: true
-        });
-      }
+      await interaction.reply({ 
+        embeds: [
+          new EmbedBuilder()
+            .setColor(0xE74C3C)
+            .setTitle("⚠️ Confirmar Cancelamento")
+            .setDescription("Tem certeza que deseja cancelar a compra? Ao confirmar, o ticket será fechado.")
+        ],
+        components: [rowConfirmacao],
+        ephemeral: true
+      });
       return;
     }
 
