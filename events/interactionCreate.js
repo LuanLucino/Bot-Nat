@@ -110,7 +110,6 @@ module.exports = {
         await interaction.channel.setParent(finalizadosId);
         await interaction.channel.permissionOverwrites.set([
           { id: interaction.guild.id, deny: ['ViewChannel'] },
-          { id: interaction.user.id, allow: ['ViewChannel', 'SendMessages'] },
           { id: roleVendasId, allow: ['ViewChannel', 'SendMessages'] }
         ]);
       }
@@ -120,7 +119,6 @@ module.exports = {
         await interaction.channel.setParent(finalizadosId);
         await interaction.channel.permissionOverwrites.set([
           { id: interaction.guild.id, deny: ['ViewChannel'] },
-          { id: interaction.user.id, allow: ['ViewChannel', 'SendMessages'] },
           { id: roleVendasId, allow: ['ViewChannel', 'SendMessages'] }
         ]);
       }
@@ -145,7 +143,7 @@ module.exports = {
           new EmbedBuilder()
             .setColor(0xE74C3C)
             .setTitle("⚠️ Confirmar Cancelamento")
-            .setDescription("Tem certeza que deseja cancelar a compra? Ao confirmar, o ticket será movido para finalizados.")
+            .setDescription("Tem certeza que deseja cancelar a compra? Ao confirmar, o ticket será movido para finalizados e você não terá mais acesso.")
         ],
         components: [rowConfirmacao],
         ephemeral: true
@@ -163,7 +161,6 @@ module.exports = {
         await interaction.channel.setParent(finalizadosId);
         await interaction.channel.permissionOverwrites.set([
           { id: interaction.guild.id, deny: ['ViewChannel'] },
-          { id: interaction.user.id, allow: ['ViewChannel', 'SendMessages'] },
           { id: roleVendasId, allow: ['ViewChannel', 'SendMessages'] }
         ]);
       }
