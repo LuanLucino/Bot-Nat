@@ -91,11 +91,15 @@ module.exports = {
       if (escolha === 'cartao') {
         await interaction.reply({ content: "💳 Checkout gerado para pagamento com cartão.", ephemeral: true });
         // Aqui você pode integrar com API de checkout e gerar link
+        const finalizadosId = "1476341804981948510";
+        await interaction.channel.setParent(finalizadosId).catch(err => console.error("Erro ao mover canal:", err));
       }
 
       if (escolha === 'pix') {
         await interaction.reply({ content: "🔑 Instruções de pagamento via Pix serão enviadas.", ephemeral: true });
         // Aqui você pode integrar com API de Pix
+        const finalizadosId = "1476341804981948510";
+        await interaction.channel.setParent(finalizadosId).catch(err => console.error("Erro ao mover canal:", err));
       }
       return;
     }
@@ -118,7 +122,7 @@ module.exports = {
           new EmbedBuilder()
             .setColor(0xE74C3C)
             .setTitle("⚠️ Confirmar Cancelamento")
-            .setDescription("Tem certeza que deseja cancelar a compra? Ao confirmar, o ticket será fechado.")
+            .setDescription("Tem certeza que deseja cancelar a compra? Ao confirmar, o ticket será movido para finalizados.")
         ],
         components: [rowConfirmacao],
         ephemeral: true
@@ -129,8 +133,9 @@ module.exports = {
     // Handler dos botões de confirmação de cancelamento
     if (interaction.isButton()) {
       if (interaction.customId === 'confirmar_cancelamento') {
-        await interaction.reply({ content: "❌ Compra cancelada. O ticket será fechado.", ephemeral: true });
-        await interaction.channel.delete().catch(err => console.error("Erro ao deletar canal:", err));
+        await interaction.reply({ content: "❌ Compra cancelada. O ticket foi movido para finalizados.", ephemeral: true });
+        const finalizadosId = "1476341804981948510";
+        await interaction.channel.setParent(finalizadosId).catch(err => console.error("Erro ao mover canal:", err));
       }
 
       if (interaction.customId === 'manter_compra') {
