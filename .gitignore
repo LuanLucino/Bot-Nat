@@ -5,9 +5,19 @@ yarn-error.log
 
 # Configurações locais
 .env
+.env.local
+.env.*.local
 
 # Logs
 *.log
 
 # Sistema
 .DS_Store
+
+# Railway / Vercel / Heroku configs locais
+.vercel/
+.railway/
+.heroku/
+
+# Cache
+.cache/
