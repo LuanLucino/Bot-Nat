@@ -1,4 +1,3 @@
-// Não precisa importar nada, Node 18+ já tem fetch
 async function gerarCheckout(descricao, valor, referenceId) {
   try {
     const orderData = {
@@ -6,7 +5,7 @@ async function gerarCheckout(descricao, valor, referenceId) {
       customer: {
         name: "Cliente",
         email: "cliente@teste.com",
-        tax_id: "12345678909" // CPF fictício, substitua se necessário
+        tax_id: "12345678909"
       },
       items: [
         {
@@ -56,6 +55,4 @@ async function gerarCheckout(descricao, valor, referenceId) {
   }
 }
 
-module.exports = {
-  gerarCheckout
-};
+module.exports = { gerarCheckout };
