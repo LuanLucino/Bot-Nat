@@ -52,15 +52,11 @@ app.post('/pagbank-webhook', async (req, res) => {
 
   if (status === "PAID") {
     try {
-      // Buscar o canal do ticket pelo reference_id (que foi definido como canal.id ao criar a ordem)
       const channel = await client.channels.fetch(reference_id);
 
       if (channel) {
-        // Mover o canal para a categoria "Finalizados"
         const finalizadosCategoryId = process.env.FINALIZADOS_CATEGORY_ID;
         await channel.setParent(finalizadosCategoryId);
-
-        // Avisar dentro do ticket
         await channel.send("✅ Pagamento confirmado! Este ticket foi movido para Finalizados.");
       }
     } catch (error) {
@@ -71,8 +67,17 @@ app.post('/pagbank-webhook', async (req, res) => {
   res.sendStatus(200);
 });
 
+// ----------------------
+// Endpoint para chave pública
+// ----------------------
+app.get("/public-key", (req, res) => {
+  res.send(`-----BEGIN PUBLIC KEY-----
+${process.env.PAGBANK_PUBLIC_KEY}
+-----END PUBLIC KEY-----`);
+});
+
 // Railway vai expor essa porta automaticamente
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Webhook PagBank rodando na porta ${PORT}`);
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
