@@ -1,13 +1,12 @@
-const fetch = require("node-fetch");
-
+// Não precisa importar nada, Node 18+ já tem fetch
 async function gerarCheckout(descricao, valor, referenceId) {
   try {
     const orderData = {
       reference_id: referenceId,
       customer: {
-        name: "Cliente Teste",
+        name: "Cliente",
         email: "cliente@teste.com",
-        tax_id: "12345678909" // CPF fictício para testes, substitua por real
+        tax_id: "12345678909" // CPF fictício, substitua se necessário
       },
       items: [
         {
