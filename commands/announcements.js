@@ -15,51 +15,36 @@ module.exports = {
         .setDescription('Preço do produto')
         .setRequired(true)
     )
-    .addStringOption(option =>
-      option.setName('links')
-        .setDescription('Links das imagens separados por espaço')
-        .setRequired(false)
-    )
     .addAttachmentOption(option =>
       option.setName('imagem1')
-        .setDescription('Imagem principal (anexo)')
-        .setRequired(false)
+        .setDescription('Imagem principal do produto (obrigatória)')
+        .setRequired(true)
     )
     .addAttachmentOption(option =>
       option.setName('imagem2')
-        .setDescription('Imagem extra (anexo opcional)')
+        .setDescription('Imagem extra (opcional)')
         .setRequired(false)
     ),
 
   async execute(interaction) {
     const nome = interaction.options.getString('nome');
     const preco = interaction.options.getNumber('preco');
-    const linksInput = interaction.options.getString('links') || "";
-
-    // Links separados por espaço
-    const imagens = linksInput.length > 0 
-      ? linksInput.split(' ').filter(url => url.trim() !== "")
-      : [];
-
-    // Anexos
     const img1 = interaction.options.getAttachment('imagem1');
     const img2 = interaction.options.getAttachment('imagem2');
 
-    if (img1) imagens.push(img1.url);
-    if (img2) imagens.push(img2.url);
-
-    // Embed principal
+    // Embed principal (nome, preço e imagem1)
     const embedPrincipal = new EmbedBuilder()
       .setColor(0x2ecc71)
       .setTitle(nome)
       .setDescription(`Preço: R$${preco.toFixed(2)}`)
-      .setImage(imagens.length > 0 ? imagens[0] : null)
+      .setImage(img1.url)
       .setFooter({ text: "Clique em comprar para registrar seu interesse." });
 
-    // Embeds extras (cada imagem vira um embed separado)
-    const embedsExtras = imagens.slice(1).map(url =>
-      new EmbedBuilder().setImage(url)
-    );
+    // Embed extra (imagem2, se existir)
+    const embedsExtras = [];
+    if (img2) {
+      embedsExtras.push(new EmbedBuilder().setImage(img2.url));
+    }
 
     // Botão de compra
     const row = new ActionRowBuilder()
