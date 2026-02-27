@@ -36,11 +36,11 @@ module.exports = {
     const preco = interaction.options.getNumber('preco');
 
     // Pegar imagens
-    const imagens = [];
     const img1 = interaction.options.getAttachment('imagem1');
     const img2 = interaction.options.getAttachment('imagem2');
     const img3 = interaction.options.getAttachment('imagem3');
 
+    const imagens = [];
     if (img1) imagens.push(img1.url);
     if (img2) imagens.push(img2.url);
     if (img3) imagens.push(img3.url);
@@ -50,7 +50,7 @@ module.exports = {
       .setColor(0x2ecc71)
       .setTitle(nome)
       .setDescription(`Preço: R$${preco.toFixed(2)}`)
-      .setImage(img1.url) // destaque
+      .setImage(img1 ? img1.url : null) // só usa se existir
       .setFooter({ text: "Clique em comprar para registrar seu interesse." });
 
     // Botão de compra
