@@ -15,42 +15,26 @@ module.exports = {
         .setDescription('Preço do produto')
         .setRequired(true)
     )
-    .addAttachmentOption(option =>
-      option.setName('imagem1')
-        .setDescription('Imagem principal do produto')
+    .addStringOption(option =>
+      option.setName('imagens')
+        .setDescription('Links das imagens separados por espaço')
         .setRequired(true)
-    )
-    .addAttachmentOption(option =>
-      option.setName('imagem2')
-        .setDescription('Imagem extra (opcional)')
-        .setRequired(false)
-    )
-    .addAttachmentOption(option =>
-      option.setName('imagem3')
-        .setDescription('Outra imagem extra (opcional)')
-        .setRequired(false)
     ),
 
   async execute(interaction) {
     const nome = interaction.options.getString('nome');
     const preco = interaction.options.getNumber('preco');
+    const imagensInput = interaction.options.getString('imagens');
 
-    // Pegar imagens
-    const img1 = interaction.options.getAttachment('imagem1');
-    const img2 = interaction.options.getAttachment('imagem2');
-    const img3 = interaction.options.getAttachment('imagem3');
-
-    const imagens = [];
-    if (img1) imagens.push(img1.url);
-    if (img2) imagens.push(img2.url);
-    if (img3) imagens.push(img3.url);
+    // Transformar em array de links
+    const imagens = imagensInput.split(' ').filter(url => url.trim() !== "");
 
     // Embed do produto (usa a primeira imagem como destaque)
     const embed = new EmbedBuilder()
       .setColor(0x2ecc71)
       .setTitle(nome)
       .setDescription(`Preço: R$${preco.toFixed(2)}`)
-      .setImage(img1 ? img1.url : null) // só usa se existir
+      .setImage(imagens.length > 0 ? imagens[0] : null)
       .setFooter({ text: "Clique em comprar para registrar seu interesse." });
 
     // Botão de compra
