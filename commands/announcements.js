@@ -22,7 +22,7 @@ module.exports = {
     )
     .addAttachmentOption(option =>
       option.setName('imagem2')
-        .setDescription('Imagem extra (miniatura opcional)')
+        .setDescription('Imagem extra (opcional)')
         .setRequired(false)
     ),
 
@@ -32,17 +32,21 @@ module.exports = {
     const img1 = interaction.options.getAttachment('imagem1');
     const img2 = interaction.options.getAttachment('imagem2');
 
-    // Embed principal (nome, preço e imagem1 grande)
+    // Embed principal (nome, preço e imagem1)
     const embedPrincipal = new EmbedBuilder()
       .setColor(0x2ecc71)
       .setTitle(nome)
       .setDescription(`Preço: R$${preco.toFixed(2)}`)
-      .setImage(img1.url) // imagem principal grande
+      .setImage(img1.url)
       .setFooter({ text: "Clique em comprar para registrar seu interesse." });
 
-    // Se tiver imagem2, coloca como miniatura
+    // Embed secundário (imagem2, se existir)
+    const embeds = [embedPrincipal];
     if (img2) {
-      embedPrincipal.setThumbnail(img2.url);
+      const embedExtra = new EmbedBuilder()
+        .setColor(0x2ecc71)
+        .setImage(img2.url);
+      embeds.push(embedExtra);
     }
 
     // Botão de compra
@@ -59,7 +63,7 @@ module.exports = {
     try {
       const anuncioChannel = await interaction.client.channels.fetch(anuncioChannelId);
       if (anuncioChannel) {
-        await anuncioChannel.send({ embeds: [embedPrincipal], components: [row] });
+        await anuncioChannel.send({ embeds, components: [row] });
         await interaction.reply({ content: "✅ Produto anunciado com sucesso!", ephemeral: true });
       }
     } catch (error) {
