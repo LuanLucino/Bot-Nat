@@ -16,18 +16,37 @@ module.exports = {
         .setRequired(true)
     )
     .addStringOption(option =>
-      option.setName('imagens')
+      option.setName('links')
         .setDescription('Links das imagens separados por espaço')
-        .setRequired(true)
+        .setRequired(false)
+    )
+    .addAttachmentOption(option =>
+      option.setName('imagem1')
+        .setDescription('Imagem principal (anexo)')
+        .setRequired(false)
+    )
+    .addAttachmentOption(option =>
+      option.setName('imagem2')
+        .setDescription('Imagem extra (anexo opcional)')
+        .setRequired(false)
     ),
 
   async execute(interaction) {
     const nome = interaction.options.getString('nome');
     const preco = interaction.options.getNumber('preco');
-    const imagensInput = interaction.options.getString('imagens');
+    const linksInput = interaction.options.getString('links') || "";
 
-    // Transformar em array de links
-    const imagens = imagensInput.split(' ').filter(url => url.trim() !== "");
+    // Links separados por espaço
+    const imagens = linksInput.length > 0 
+      ? linksInput.split(' ').filter(url => url.trim() !== "")
+      : [];
+
+    // Anexos
+    const img1 = interaction.options.getAttachment('imagem1');
+    const img2 = interaction.options.getAttachment('imagem2');
+
+    if (img1) imagens.push(img1.url);
+    if (img2) imagens.push(img2.url);
 
     // Embed do produto (usa a primeira imagem como destaque)
     const embed = new EmbedBuilder()
