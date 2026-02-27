@@ -48,13 +48,18 @@ module.exports = {
     if (img1) imagens.push(img1.url);
     if (img2) imagens.push(img2.url);
 
-    // Embed do produto (usa a primeira imagem como destaque)
-    const embed = new EmbedBuilder()
+    // Embed principal
+    const embedPrincipal = new EmbedBuilder()
       .setColor(0x2ecc71)
       .setTitle(nome)
       .setDescription(`Preço: R$${preco.toFixed(2)}`)
       .setImage(imagens.length > 0 ? imagens[0] : null)
       .setFooter({ text: "Clique em comprar para registrar seu interesse." });
+
+    // Embeds extras (cada imagem vira um embed separado)
+    const embedsExtras = imagens.slice(1).map(url =>
+      new EmbedBuilder().setImage(url)
+    );
 
     // Botão de compra
     const row = new ActionRowBuilder()
@@ -70,7 +75,7 @@ module.exports = {
     try {
       const anuncioChannel = await interaction.client.channels.fetch(anuncioChannelId);
       if (anuncioChannel) {
-        await anuncioChannel.send({ embeds: [embed], components: [row], files: imagens });
+        await anuncioChannel.send({ embeds: [embedPrincipal, ...embedsExtras], components: [row] });
         await interaction.reply({ content: "✅ Produto anunciado com sucesso!", ephemeral: true });
       }
     } catch (error) {
