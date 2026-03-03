@@ -146,7 +146,8 @@ module.exports = {
           const embed = new EmbedBuilder()
             .setColor(0x2ecc71)
             .setTitle("🔑 Pagamento via Pix")
-            .setDescription("Clique no botão abaixo para realizar o pagamento:");
+            .setDescription("Escaneie o QR Code abaixo ou clique no botão para pagar:")
+            .setImage("https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" + encodeURIComponent(resultado.url));
 
           const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
