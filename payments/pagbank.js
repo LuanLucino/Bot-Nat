@@ -1,6 +1,5 @@
-const fetch = require("node-fetch");
+// Não precisa de require("node-fetch") em Node 18+
 
-// Define se vamos usar sandbox ou produção
 const PAGBANK_ENV = process.env.PAGBANK_ENV || "sandbox"; 
 // valores possíveis: "sandbox" ou "production"
 
