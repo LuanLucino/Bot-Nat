@@ -113,16 +113,19 @@ module.exports = {
             flags: 64 
           });
         } else {
-          await interaction.reply({ 
-            embeds: [
-              new EmbedBuilder()
-                .setColor(0x3498db)
-                .setTitle("💳 Pagamento com Cartão")
-                .setDescription("Clique no link abaixo para realizar o pagamento:")
-                .setURL(resultado.url)
-            ],
-            flags: 64 
-          });
+          const embed = new EmbedBuilder()
+            .setColor(0x3498db)
+            .setTitle("💳 Pagamento com Cartão")
+            .setDescription("Clique no botão abaixo para realizar o pagamento:");
+
+          const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+              .setLabel("Pagar agora")
+              .setStyle(ButtonStyle.Link)
+              .setURL(resultado.url)
+          );
+
+          await interaction.reply({ embeds: [embed], components: [row], flags: 64 });
         }
       }
 
@@ -140,16 +143,19 @@ module.exports = {
             flags: 64 
           });
         } else {
-          await interaction.reply({ 
-            embeds: [
-              new EmbedBuilder()
-                .setColor(0x2ecc71)
-                .setTitle("🔑 Pagamento via Pix")
-                .setDescription("Clique no link abaixo para realizar o pagamento:")
-                .setURL(resultado.url)
-            ],
-            flags: 64 
-          });
+          const embed = new EmbedBuilder()
+            .setColor(0x2ecc71)
+            .setTitle("🔑 Pagamento via Pix")
+            .setDescription("Clique no botão abaixo para realizar o pagamento:");
+
+          const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+              .setLabel("Pagar agora")
+              .setStyle(ButtonStyle.Link)
+              .setURL(resultado.url)
+          );
+
+          await interaction.reply({ embeds: [embed], components: [row], flags: 64 });
         }
       }
       return;
