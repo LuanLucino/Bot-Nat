@@ -1,9 +1,20 @@
+const fetch = require("node-fetch");
+
+// Define se vamos usar sandbox ou produção
+const PAGBANK_ENV = process.env.PAGBANK_ENV || "sandbox"; 
+// valores possíveis: "sandbox" ou "production"
+
+const ENDPOINTS = {
+  sandbox: "https://sandbox.api.pagseguro.com/orders",
+  production: "https://api.pagseguro.com/orders"
+};
+
 async function gerarCheckout(descricao, valor, referenceId) {
   try {
     const orderData = {
       reference_id: referenceId,
       customer: {
-        name: "Cliente",
+        name: "Cliente Teste",
         email: "cliente@teste.com",
         tax_id: "12345678909"
       },
@@ -13,22 +24,10 @@ async function gerarCheckout(descricao, valor, referenceId) {
           quantity: 1,
           unit_amount: Math.round(valor * 100)
         }
-      ],
-      shipping: {
-        address: {
-          street: "Rua Exemplo",
-          number: "123",
-          complement: "Apto 1",
-          locality: "Centro",
-          city: "São Paulo",
-          region_code: "SP",
-          country: "BRA",
-          postal_code: "01000-000"
-        }
-      }
+      ]
     };
 
-    const response = await fetch("https://api.pagseguro.com/orders", {
+    const response = await fetch(ENDPOINTS[PAGBANK_ENV], {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${process.env.PAGBANK_TOKEN}`,
@@ -41,17 +40,17 @@ async function gerarCheckout(descricao, valor, referenceId) {
 
     if (!response.ok) {
       console.error("Erro PagBank:", data);
-      throw new Error(`Erro ao criar ordem: ${response.status} - ${JSON.stringify(data)}`);
+      return { erro: true, mensagem: data.error_messages?.[0]?.description || "Erro desconhecido" };
     }
 
     if (data.links && data.links.length > 0) {
-      return data.links[0].href;
+      return { erro: false, url: data.links[0].href };
     } else {
-      throw new Error("Nenhum link de pagamento retornado pela API.");
+      return { erro: true, mensagem: "Nenhum link de pagamento retornado pela API." };
     }
   } catch (error) {
     console.error("Erro na integração com PagBank:", error);
-    throw error;
+    return { erro: true, mensagem: "Falha na integração com PagBank." };
   }
 }
 

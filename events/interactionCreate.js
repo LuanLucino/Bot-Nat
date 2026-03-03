@@ -79,7 +79,6 @@ module.exports = {
             .setStyle(ButtonStyle.Danger)
         );
 
-        // Guardar o ID do canal no objeto da interação para usar depois
         interaction.channelCriado = channel;
 
         await channel.send({ 
@@ -101,24 +100,56 @@ module.exports = {
       const escolha = interaction.values[0];
 
       if (escolha === 'cartao') {
-        try {
-          // Passa o ID do canal como reference_id
-          const link = await gerarCheckout("Compra via Cartão", 15.00, interaction.channel.id);
-          await interaction.reply({ content: `💳 Pague com cartão aqui: ${link}`, flags: 64 });
-        } catch (err) {
-          console.error("Erro no checkout cartão:", err);
-          await interaction.reply({ content: "❌ Erro ao gerar checkout de cartão.", flags: 64 });
+        const resultado = await gerarCheckout("Compra via Cartão", 15.00, interaction.channel.id);
+
+        if (resultado.erro) {
+          await interaction.reply({ 
+            embeds: [
+              new EmbedBuilder()
+                .setColor(0xE74C3C)
+                .setTitle("❌ Erro no Checkout")
+                .setDescription(`Erro ao gerar checkout de cartão: ${resultado.mensagem}`)
+            ],
+            flags: 64 
+          });
+        } else {
+          await interaction.reply({ 
+            embeds: [
+              new EmbedBuilder()
+                .setColor(0x3498db)
+                .setTitle("💳 Pagamento com Cartão")
+                .setDescription("Clique no link abaixo para realizar o pagamento:")
+                .setURL(resultado.url)
+            ],
+            flags: 64 
+          });
         }
       }
 
       if (escolha === 'pix') {
-        try {
-          // Passa o ID do canal como reference_id
-          const link = await gerarCheckout("Compra via Pix", 15.00, interaction.channel.id);
-          await interaction.reply({ content: `🔑 Pague via Pix aqui: ${link}`, flags: 64 });
-        } catch (err) {
-          console.error("Erro no checkout Pix:", err);
-          await interaction.reply({ content: "❌ Erro ao gerar checkout Pix.", flags: 64 });
+        const resultado = await gerarCheckout("Compra via Pix", 15.00, interaction.channel.id);
+
+        if (resultado.erro) {
+          await interaction.reply({ 
+            embeds: [
+              new EmbedBuilder()
+                .setColor(0xE74C3C)
+                .setTitle("❌ Erro no Checkout")
+                .setDescription(`Erro ao gerar checkout Pix: ${resultado.mensagem}`)
+            ],
+            flags: 64 
+          });
+        } else {
+          await interaction.reply({ 
+            embeds: [
+              new EmbedBuilder()
+                .setColor(0x2ecc71)
+                .setTitle("🔑 Pagamento via Pix")
+                .setDescription("Clique no link abaixo para realizar o pagamento:")
+                .setURL(resultado.url)
+            ],
+            flags: 64 
+          });
         }
       }
       return;
