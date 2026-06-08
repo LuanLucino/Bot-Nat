@@ -23,7 +23,7 @@ module.exports = {
 
   async execute(interaction) {
     // Canal permitido para executar o comando
-    const canalPermitido = "1475643173005955235";
+    const canalPermitido = process.env.ADMIN_PROMO_CHANNEL_ID;
     if (interaction.channelId !== canalPermitido) {
       return interaction.reply({
         embeds: [
@@ -69,7 +69,7 @@ module.exports = {
     await interaction.reply({ embeds: [confirmEmbed], ephemeral: true });
 
     // Canal de promoções para notificação pública
-    const promoChannelId = "1475641664914591946";
+    const promoChannelId = process.env.PROMO_CHANNEL_ID;
     try {
       const promoChannel = await interaction.client.channels.fetch(promoChannelId);
       if (promoChannel) {

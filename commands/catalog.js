@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 const fs = require('fs');
 
 function carregarProdutos() {
@@ -31,8 +31,25 @@ module.exports = {
       .setTitle("📖 Catálogo de Produtos")
       .setDescription("Confira os itens disponíveis para pedido:")
       .addFields({ name: "Produtos", value: itens.join('\n') })
-      .setFooter({ text: "Use /pedido para registrar seu pedido." });
+      .setFooter({ text: "Selecione um produto abaixo para comprar." });
 
-    await interaction.reply({ embeds: [catalogoEmbed], ephemeral: true });
+    const opcoes = Object.entries(produtos).map(([id, produto]) => {
+      const promo = promocoes[id];
+      const preco = promo ? promo.preco_promocional : produto.preco;
+      return {
+        label: produto.nome,
+        description: `R$${preco.toFixed(2)}${promo ? ' (promoção)' : ''}`,
+        value: id
+      };
+    });
+
+    const rowComprar = new ActionRowBuilder().addComponents(
+      new StringSelectMenuBuilder()
+        .setCustomId('comprar_catalogo')
+        .setPlaceholder('Selecione um produto para comprar')
+        .addOptions(opcoes)
+    );
+
+    await interaction.reply({ embeds: [catalogoEmbed], components: [rowComprar], ephemeral: true });
   }
 };

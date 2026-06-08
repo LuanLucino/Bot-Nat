@@ -1,30 +1,35 @@
-// Não precisa de require("node-fetch") em Node 18+
-
-const PAGBANK_ENV = process.env.PAGBANK_ENV || "sandbox"; 
-// valores possíveis: "sandbox" ou "production"
+const PAGBANK_ENV = process.env.PAGBANK_ENV || "sandbox";
 
 const ENDPOINTS = {
-  sandbox: "https://sandbox.api.pagseguro.com/orders",
-  production: "https://api.pagseguro.com/orders"
+  sandbox: "https://sandbox.api.pagseguro.com/checkouts",
+  production: "https://api.pagseguro.com/checkouts"
 };
 
 async function gerarCheckout(descricao, valor, referenceId) {
   try {
-    const orderData = {
+    const notificationUrls = process.env.WEBHOOK_URL
+      ? [`${process.env.WEBHOOK_URL}/pagbank-webhook`]
+      : [];
+
+    const body = {
       reference_id: referenceId,
-      customer: {
-        name: "Cliente Teste",
-        email: "cliente@teste.com",
-        tax_id: "12345678909"
-      },
+      expiration_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       items: [
         {
           name: descricao,
           quantity: 1,
           unit_amount: Math.round(valor * 100)
         }
+      ],
+      payment_methods: [
+        { type: "CREDIT_CARD" },
+        { type: "PIX" }
       ]
     };
+
+    if (notificationUrls.length > 0) {
+      body.notification_urls = notificationUrls;
+    }
 
     const response = await fetch(ENDPOINTS[PAGBANK_ENV], {
       method: "POST",
@@ -32,21 +37,26 @@ async function gerarCheckout(descricao, valor, referenceId) {
         "Authorization": `Bearer ${process.env.PAGBANK_TOKEN}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(orderData)
+      body: JSON.stringify(body)
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      console.error("Erro PagBank:", data);
-      return { erro: true, mensagem: data.error_messages?.[0]?.description || "Erro desconhecido" };
+      console.error("Erro PagBank:", JSON.stringify(data, null, 2));
+      return {
+        erro: true,
+        mensagem: data.error_messages?.[0]?.description || data.message || "Erro desconhecido"
+      };
     }
 
-    if (data.links && data.links.length > 0) {
-      return { erro: false, url: data.links[0].href };
-    } else {
-      return { erro: true, mensagem: "Nenhum link de pagamento retornado pela API." };
+    const payLink = data.links?.find(link => link.rel === "PAY");
+    if (payLink) {
+      return { erro: false, url: payLink.href };
     }
+
+    console.error("Resposta PagBank sem link PAY:", JSON.stringify(data, null, 2));
+    return { erro: true, mensagem: "Nenhum link de pagamento retornado pela API." };
   } catch (error) {
     console.error("Erro na integração com PagBank:", error);
     return { erro: true, mensagem: "Falha na integração com PagBank." };

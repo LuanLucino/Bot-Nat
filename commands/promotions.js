@@ -38,7 +38,7 @@ module.exports = {
       .setTitle("🔥 Promoções Ativas")
       .setDescription("Aproveite os descontos especiais!")
       .addFields({ name: "Itens em promoção", value: itensPromocao.join('\n') })
-      .setFooter({ text: "Use /pedido para aproveitar as promoções." });
+      .setFooter({ text: "Use /catalogo para comprar com desconto." });
 
     await interaction.reply({ embeds: [promoEmbed], ephemeral: true });
   }

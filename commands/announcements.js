@@ -59,7 +59,7 @@ module.exports = {
       );
 
     // Canal fixo de anúncios
-    const anuncioChannelId = "1475652551050526883";
+    const anuncioChannelId = process.env.ANNOUNCEMENTS_CHANNEL_ID;
     try {
       const anuncioChannel = await interaction.client.channels.fetch(anuncioChannelId);
       if (anuncioChannel) {

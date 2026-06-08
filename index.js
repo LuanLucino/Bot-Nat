@@ -55,12 +55,13 @@ app.post('/pagbank-webhook', async (req, res) => {
       const channel = await client.channels.fetch(reference_id);
 
       if (channel) {
-        const finalizadosCategoryId = process.env.FINALIZADOS_CATEGORY_ID;
-        await channel.setParent(finalizadosCategoryId);
-        await channel.send("✅ Pagamento confirmado! Este ticket foi movido para Finalizados.");
+        await channel.setParent(process.env.FINALIZADOS_CATEGORY_ID);
+        await channel.send(
+          `✅ **Pagamento confirmado!**\n<@&${process.env.ROLE_VENDAS_ID}> realize a entrega manual para este cliente.`
+        );
       }
     } catch (error) {
-      console.error("Erro ao mover ticket:", error);
+      console.error("Erro ao processar pagamento confirmado:", error);
     }
   }
 
